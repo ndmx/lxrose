@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import '../styles/nursingForms.css';
 
 const NursingForms = ({ onSubmitBooking, onRegister }) => {
-  const [isBooking, setIsBooking] = useState(true);
+  const [activeTab, setActiveTab] = useState('booking');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Booking State
   const [bookingDetails, setBookingDetails] = useState({
@@ -33,197 +36,327 @@ const NursingForms = ({ onSubmitBooking, onRegister }) => {
   };
 
   // Handle booking form submission
-  const handleBookingSubmit = (e) => {
+  const handleBookingSubmit = async (e) => {
     e.preventDefault();
-    onSubmitBooking(bookingDetails);
-    setBookingDetails({
-      serviceType: '',
-      patientAge: '',
-      careDuration: '',
-      startDate: '',
-      contactInfo: '',
-      additionalNotes: '',
-    });
+    setIsSubmitting(true);
+    
+    try {
+      await onSubmitBooking(bookingDetails);
+      setSuccessMessage('✓ Booking submitted successfully! We\'ll contact you soon.');
+      setBookingDetails({
+        serviceType: '',
+        patientAge: '',
+        careDuration: '',
+        startDate: '',
+        contactInfo: '',
+        additionalNotes: '',
+      });
+      
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+    } catch (error) {
+      setSuccessMessage('× Error submitting booking. Please try again.');
+    }
+    
+    setIsSubmitting(false);
   };
 
   // Handle registration form submission
-  const handleRegistrationSubmit = (e) => {
+  const handleRegistrationSubmit = async (e) => {
     e.preventDefault();
-    onRegister(nurseInfo);
-    setNurseInfo({
-      name: '',
-      qualifications: '',
-      yearsOfExperience: '',
-      availability: '',
-      email: '',
-    });
+    setIsSubmitting(true);
+    
+    try {
+      await onRegister(nurseInfo);
+      setSuccessMessage('✓ Registration submitted successfully! We\'ll review your application.');
+      setNurseInfo({
+        name: '',
+        qualifications: '',
+        yearsOfExperience: '',
+        availability: '',
+        email: '',
+      });
+      
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+    } catch (error) {
+      setSuccessMessage('× Error submitting registration. Please try again.');
+    }
+    
+    setIsSubmitting(false);
   };
 
   return (
-    <div id="nurse-services-wrapper" className="nurse-services-wrapper">
-      {isBooking ? (
-        <form id="nurse-booking-form" className="nurse-booking-form" onSubmit={handleBookingSubmit}>
-          <h2>Book Nursing Services</h2>
-          <p>
-            Here on our health platform, we can connect you with our vast network of nurses to meet your care needs.
-          </p>
-          <div>
-            <label>Service Type</label>
-            <input
-              type="text"
-              name="serviceType"
-              value={bookingDetails.serviceType}
-              onChange={handleBookingChange}
-              placeholder="e.g., In-home care, Post-surgery assistance"
-              required
-            />
+    <div className="nursing-forms-container">
+      {/* Tab Navigation */}
+      <div className="nursing-tabs">
+        <button
+          className={`tab-button ${activeTab === 'booking' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveTab('booking');
+            setSuccessMessage('');
+          }}
+        >
+          <span className="tab-icon">📋</span>
+          Book a Nurse
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'registration' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveTab('registration');
+            setSuccessMessage('');
+          }}
+        >
+          <span className="tab-icon">👨‍⚕️</span>
+          Register as Nurse
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      <div className="tab-content">
+        {activeTab === 'booking' ? (
+          <div className="form-wrapper">
+            <div className="form-header">
+              <h3>Book Nursing Services</h3>
+              <p>Connect with our network of professional nurses for quality care</p>
+            </div>
+
+            <form className="nursing-form" onSubmit={handleBookingSubmit}>
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="serviceType">
+                    Service Type <span className="required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="serviceType"
+                    name="serviceType"
+                    value={bookingDetails.serviceType}
+                    onChange={handleBookingChange}
+                    placeholder="e.g., In-home care, Post-surgery assistance"
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="patientAge">
+                    Patient Age <span className="required">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="patientAge"
+                    name="patientAge"
+                    value={bookingDetails.patientAge}
+                    onChange={handleBookingChange}
+                    placeholder="Enter age"
+                    required
+                    disabled={isSubmitting}
+                    min="0"
+                    max="120"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="careDuration">
+                    Care Duration <span className="required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="careDuration"
+                    name="careDuration"
+                    value={bookingDetails.careDuration}
+                    onChange={handleBookingChange}
+                    placeholder="e.g., 2 weeks, 3 months"
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="startDate">
+                    Start Date <span className="required">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="startDate"
+                    name="startDate"
+                    value={bookingDetails.startDate}
+                    onChange={handleBookingChange}
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="contactInfo">
+                  Contact Information <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="contactInfo"
+                  name="contactInfo"
+                  value={bookingDetails.contactInfo}
+                  onChange={handleBookingChange}
+                  placeholder="Phone number or email"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="additionalNotes">Additional Notes</label>
+                <textarea
+                  id="additionalNotes"
+                  name="additionalNotes"
+                  value={bookingDetails.additionalNotes}
+                  onChange={handleBookingChange}
+                  placeholder="Any specific requirements or information?"
+                  rows="4"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <span className="spinner"></span>
+                    Submitting...
+                  </>
+                ) : (
+                  <>Submit Booking</>
+                )}
+              </button>
+
+              {successMessage && (
+                <div className={`success-message ${successMessage.includes('×') ? 'error' : ''}`}>
+                  {successMessage}
+                </div>
+              )}
+            </form>
           </div>
-          <div>
-            <label>Patient Age</label>
-            <input
-              type="number"
-              name="patientAge"
-              value={bookingDetails.patientAge}
-              onChange={handleBookingChange}
-              placeholder="Enter patient age"
-              required
-            />
+        ) : (
+          <div className="form-wrapper">
+            <div className="form-header">
+              <h3>Register as a Nurse</h3>
+              <p>Join our team and connect with clients who need your expertise</p>
+            </div>
+
+            <form className="nursing-form" onSubmit={handleRegistrationSubmit}>
+              <div className="form-field">
+                <label htmlFor="name">
+                  Full Name <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={nurseInfo.name}
+                  onChange={handleRegistrationChange}
+                  placeholder="Enter your full name"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="email">
+                  Email Address <span className="required">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={nurseInfo.email}
+                  onChange={handleRegistrationChange}
+                  placeholder="your.email@example.com"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="qualifications">
+                    Qualifications <span className="required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="qualifications"
+                    name="qualifications"
+                    value={nurseInfo.qualifications}
+                    onChange={handleRegistrationChange}
+                    placeholder="e.g., RN, LPN, CNA"
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="yearsOfExperience">
+                    Years of Experience <span className="required">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="yearsOfExperience"
+                    name="yearsOfExperience"
+                    value={nurseInfo.yearsOfExperience}
+                    onChange={handleRegistrationChange}
+                    placeholder="Years"
+                    required
+                    disabled={isSubmitting}
+                    min="0"
+                    max="60"
+                  />
+                </div>
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="availability">
+                  Availability <span className="required">*</span>
+                </label>
+                <select
+                  id="availability"
+                  name="availability"
+                  value={nurseInfo.availability}
+                  onChange={handleRegistrationChange}
+                  required
+                  disabled={isSubmitting}
+                >
+                  <option value="">Select availability</option>
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Weekends only">Weekends only</option>
+                  <option value="On-call">On-call</option>
+                  <option value="Flexible">Flexible</option>
+                </select>
+              </div>
+
+              <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <span className="spinner"></span>
+                    Submitting...
+                  </>
+                ) : (
+                  <>Submit Registration</>
+                )}
+              </button>
+
+              {successMessage && (
+                <div className={`success-message ${successMessage.includes('×') ? 'error' : ''}`}>
+                  {successMessage}
+                </div>
+              )}
+            </form>
           </div>
-          <div>
-            <label>Care Duration</label>
-            <input
-              type="text"
-              name="careDuration"
-              value={bookingDetails.careDuration}
-              onChange={handleBookingChange}
-              placeholder="e.g., 2 weeks, 3 months"
-              required
-            />
-          </div>
-          <div>
-            <label>Start Date</label>
-            <input
-              type="date"
-              name="startDate"
-              value={bookingDetails.startDate}
-              onChange={handleBookingChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Contact Info</label>
-            <input
-              type="text"
-              name="contactInfo"
-              value={bookingDetails.contactInfo}
-              onChange={handleBookingChange}
-              placeholder="Enter phone number or email"
-              required
-            />
-          </div>
-          <div>
-            <label>Additional Notes</label>
-            <textarea
-              name="additionalNotes"
-              value={bookingDetails.additionalNotes}
-              onChange={handleBookingChange}
-              placeholder="Any specific requirements or information?"
-            />
-          </div>
-          <button id="nurse-submit-booking" className="nurse-submit-button" type="submit">
-            Submit Booking
-          </button>
-          <div className="nurse-services-toggle">
-            <button
-              id="nurse-register-btn"
-              className="nurse-toggle-button"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsBooking(false);
-              }}
-            >
-              Register as a Nurse
-            </button>
-          </div>
-        </form>
-      ) : (
-        <form id="nurse-registration-form" className="nurse-registration-form" onSubmit={handleRegistrationSubmit}>
-          <h2>Register as a Nurse</h2>
-          <p>
-            Register on our platform and we will connect you with clients looking for compassionate and skilled nurses.
-          </p>
-          <div>
-            <label>Name</label>
-            <input
-              type="text"
-              name="name"
-              value={nurseInfo.name}
-              onChange={handleRegistrationChange}
-              placeholder="Enter your full name"
-              required
-            />
-          </div>
-          <div>
-            <label>Qualifications</label>
-            <input
-              type="text"
-              name="qualifications"
-              value={nurseInfo.qualifications}
-              onChange={handleRegistrationChange}
-              placeholder="e.g., Registered Nurse, Certified Caregiver"
-              required
-            />
-          </div>
-          <div>
-            <label>Years of Experience</label>
-            <input
-              type="number"
-              name="yearsOfExperience"
-              value={nurseInfo.yearsOfExperience}
-              onChange={handleRegistrationChange}
-              placeholder="Enter years of experience"
-              required
-            />
-          </div>
-          <div>
-            <label>Availability</label>
-            <input
-              type="text"
-              name="availability"
-              value={nurseInfo.availability}
-              onChange={handleRegistrationChange}
-              placeholder="e.g., Full-time, Part-time"
-              required
-            />
-          </div>
-          <div>
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              value={nurseInfo.email}
-              onChange={handleRegistrationChange}
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-          <button id="nurse-submit-registration" className="nurse-submit-button" type="submit">
-            Register
-          </button>
-          <div className="nurse-services-toggle">
-            <button
-              id="nurse-booking-btn"
-              className="nurse-toggle-button"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsBooking(true);
-              }}
-            >
-              Book Nursing Services
-            </button>
-          </div>
-        </form>
-      )}
+        )}
+      </div>
     </div>
   );
 };
