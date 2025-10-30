@@ -50,6 +50,7 @@ coverage/
 .cache/
 .parcel-cache/
 .eslintcache
+.firebase/
 
 # Temporary files
 *.tmp
