@@ -167,9 +167,10 @@
   gap: 8px;
 }
 
-.form-field label {
+.contact-page .form-field label,
+.modern-contact-form .form-field label {
   font-weight: 600;
-  color: #2c3e50;
+  color: #2c3e50 !important;
   font-size: 0.95rem;
   display: flex;
   justify-content: space-between;
