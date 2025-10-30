@@ -31,3 +31,182 @@ section p {
   position: relative;
   width: 100%;
 }
+
+/* ============================================
+   HOME SERVICES SECTION - MODERN DESIGN
+   ============================================ */
+
+.home-services-section {
+  padding: 80px 20px !important;
+  background: linear-gradient(135deg, #1a252f 0%, #0f1419 100%) !important;
+}
+
+.services-header {
+  text-align: center;
+  margin-bottom: 60px;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.services-header h2 {
+  font-size: 2.8rem;
+  color: white;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.services-header p {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.home-services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.home-service-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  text-decoration: none;
+  color: white;
+  animation: fadeInUp 0.6s ease-out both;
+  min-height: 380px;
+}
+
+.home-service-card:nth-child(1) { animation-delay: 0.1s; }
+.home-service-card:nth-child(2) { animation-delay: 0.2s; }
+.home-service-card:nth-child(3) { animation-delay: 0.3s; }
+
+.home-service-card:hover {
+  transform: translateY(-15px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(102, 126, 234, 0.4);
+  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+}
+
+.service-icon {
+  font-size: 4rem;
+  margin-bottom: 25px;
+  transition: all 0.4s ease;
+}
+
+.home-service-card:hover .service-icon {
+  transform: scale(1.15) rotate(5deg);
+}
+
+.home-service-card h3 {
+  font-size: 1.8rem;
+  color: white;
+  margin-bottom: 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.home-service-card:hover h3 {
+  color: #667eea;
+}
+
+.home-service-card p {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.7;
+  margin-bottom: 25px;
+  flex: 1;
+}
+
+.service-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #667eea;
+  transition: all 0.3s ease;
+}
+
+.home-service-card:hover .service-arrow {
+  color: #7c8bf5;
+  transform: translateX(5px);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1024px) {
+  .services-header h2 {
+    font-size: 2.3rem;
+  }
+
+  .home-services-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-services-section {
+    padding: 50px 20px !important;
+  }
+
+  .services-header h2 {
+    font-size: 2rem;
+  }
+
+  .services-header p {
+    font-size: 1.05rem;
+  }
+
+  .home-services-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .home-service-card {
+    padding: 30px 25px;
+    min-height: auto;
+  }
+
+  .service-icon {
+    font-size: 3.5rem;
+  }
+
+  .home-service-card h3 {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .services-header h2 {
+    font-size: 1.7rem;
+  }
+
+  .service-icon {
+    font-size: 3rem;
+  }
+
+  .home-service-card h3 {
+    font-size: 1.4rem;
+  }
+}
