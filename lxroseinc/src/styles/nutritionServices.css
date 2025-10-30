@@ -1,12 +1,12 @@
 .nutrition-block-container {
     display: flex; /* Align items horizontally */
     flex-wrap: wrap; /* Ensure blocks wrap on smaller screens */
-    justify-content: space-between; /* Add spacing between items */
-    align-items: center; /* Ensure vertical alignment */
+    justify-content: space-evenly; /* Add spacing between items */
+    align-items: flex-start; /* Ensure vertical alignment */
     gap: 20px; /* Adds spacing between blocks */
-    margin: 70px 5px 60px 5px; /* Add ?px margin above the container */
+    margin: 20px 5px 50px 5px; /* Proper top margin to avoid overlap */
     padding: 30px 30px 10px 30px; /* Add padding for spacing */
-    background: #ffffff1a; /* Subtle overlay */
+    background: rgba(255, 255, 255, 0.1); /* Subtle overlay */
     border-radius: 12px; /* Soften edges */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add depth */
   }
@@ -20,9 +20,8 @@
     color: white;
     padding: 20px;
     margin-bottom: 20px;
-    border: 3px solid #333;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background: rgba(0, 0, 0, 0.7); /* Add a slight dark overlay for contrast */
+    background: transparent; /* Transparent background like main page */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Consistent shadow effect */
     display: flex;
     flex-direction: column; /* Stack content vertically inside the block */
     justify-content: space-between; /* Evenly space content */

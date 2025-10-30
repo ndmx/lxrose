@@ -4,9 +4,12 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    height: 600px;
-    overflow: hidden; /* Prevent unwanted overflow */
+    margin: 20px 5px 50px 5px; /* Proper top margin to avoid overlap */
+    padding: 30px 30px 10px 30px;
+    background: rgba(255, 255, 255, 0.1); /* Subtle overlay */
+    border-radius: 12px; /* Soften edges */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add depth */
+    min-height: 600px;
 }
 
 .nursing-block {
