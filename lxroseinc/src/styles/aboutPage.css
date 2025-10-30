@@ -14,7 +14,7 @@
 /* Team Statistics Section */
 #team-stats-section {
   padding: 60px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a252f 0%, #0f1419 100%);
 }
 
 .stats-container {
@@ -59,7 +59,7 @@
   display: flex;
   justify-content: center;
   gap: 5%; /* Adds a 5% gap between content and image container */
-  background-color: #333;
+  background: linear-gradient(135deg, #1a252f 0%, #0f1419 100%);
 }
 
 .team-wrapper {
@@ -113,7 +113,7 @@
 /* Team Member Details */
 .team-member-details {
   flex: 1;
-  background-color: #444;
+  background: linear-gradient(135deg, #1a252f 0%, #0f1419 100%);
   color: white;
   padding: 25px;
   border-radius: 12px;
