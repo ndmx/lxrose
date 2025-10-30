@@ -39,7 +39,7 @@ const NursingServices = () => {
       <div id="home-banner4" className="banner">
         <div className="container">
           <div className="header-text">
-            <h1>Nursing Services</h1>
+            <h1>Nursing Care Services</h1>
           </div>
         </div>
       </div>

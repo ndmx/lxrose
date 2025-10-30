@@ -172,7 +172,6 @@ const FAQ = () => {
         <div className="container">
           <div className="header-text">
             <h1>Frequently Asked Questions</h1>
-            <p className="banner-subtitle">Find answers to common questions about our services</p>
           </div>
         </div>
       </div>
