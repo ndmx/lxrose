@@ -10,6 +10,7 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [routeKey, setRouteKey] = useState(0);
   const [userId, setUserId] = useState(null); // Use null instead of 'null'
+  const [theme, setTheme] = useState('dark'); // Default to dark theme
 
   const handleLoginStatusChange = (status, userId) => {
     setLoggedIn(status);
@@ -24,6 +25,12 @@ function App() {
     setRouteKey((prevKey) => prevKey + 1);
   };
 
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
   useEffect(() => {
     // Check if a userId exists in localStorage
     const storedUserId = localStorage.getItem('userId');
@@ -31,15 +38,26 @@ function App() {
       setLoggedIn(true);
       setUserId(storedUserId);
     }
+
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
   }, []);
 
   useEffect(() => {
     console.log('User ID:', userId);
   }, [userId]);
 
+  useEffect(() => {
+    // Apply theme to document
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   return (
     <Router>
-      <Header onLogout={handleLogout} loggedIn={loggedIn} />
+      <Header onLogout={handleLogout} loggedIn={loggedIn} theme={theme} toggleTheme={toggleTheme} />
       <Routes>
         <Route path="/" element={loggedIn ? <Home userId={userId} /> : <Login onLoginStatusChange={handleLoginStatusChange} />} key={routeKey} />
       </Routes>
