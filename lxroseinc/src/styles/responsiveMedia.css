@@ -1,0 +1,341 @@
+/* ========================================
+   RESPONSIVE DESIGN - CONSOLIDATED
+   ======================================== */
+
+/* ========== TABLET (768px - 1024px) ========== */
+@media only screen and (max-width: 1024px) {
+  /* Header adjustments */
+  .header-text h1 {
+    font-size: 2em;
+  }
+
+  /* Team members on About page */
+  .team-wrapper {
+    flex-direction: column;
+  }
+
+  .team-members-container,
+  .image-container {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .image-container {
+    margin-top: 30px;
+  }
+
+  /* Statistics on About page */
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ========== TABLET & MOBILE (max 768px) ========== */
+@media only screen and (max-width: 768px) {
+  /* Global Typography */
+  body {
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+  }
+
+  /* Header & Navigation */
+  .header-text h1 {
+    font-size: 1.8em;
+  }
+
+  header {
+    flex-direction: column;
+  }
+
+  nav ul {
+    padding-top: 15px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  nav li {
+    margin-bottom: 8px;
+  }
+
+  /* Banner */
+  .banner {
+    min-height: 250px;
+    padding: 20px;
+  }
+
+  .container {
+    padding: 5px;
+  }
+
+  /* Sections */
+  section {
+    padding: 20px 10px;
+  }
+
+  /* Forms (General) */
+  form {
+    padding: 15px;
+    grid-template-columns: 1fr;
+  }
+
+  form label {
+    text-align: left;
+    padding-right: 0;
+  }
+
+  form input, form textarea {
+    grid-column: 1 / span 1;
+  }
+
+  /* Buttons */
+  button {
+    font-size: 0.9rem;
+    padding: 10px;
+    margin: 5px 0;
+  }
+
+  /* Images */
+  img {
+    max-width: 90%;
+  }
+
+  /* Service Blocks */
+  .mental-block, .nutrition-block {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  /* About Section */
+  .about-section {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .about-section img {
+    max-width: 80%;
+  }
+
+  .profile-picture {
+    width: 80%;
+  }
+
+  .profile-picture img {
+    width: 85%;
+    border-radius: 35px 35px 0 35px;
+  }
+
+  .about-text {
+    width: 100%;
+    padding: 20px;
+  }
+
+  /* Team Statistics */
+  .stats-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+
+  /* Footer */
+  footer {
+    padding: 15px;
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* ========== MOBILE (max 480px) ========== */
+@media only screen and (max-width: 480px) {
+  /* Typography */
+  .header-text h1 {
+    font-size: 1.5em;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  h2 {
+    font-size: 1.4em;
+  }
+
+  p {
+    font-size: 1em;
+  }
+
+  /* Banner */
+  .banner {
+    min-height: 200px;
+  }
+
+  #home-banner {
+    padding-top: 150px;
+  }
+
+  #home-banner4 {
+    padding-top: 150px;
+    margin-top: 30px;
+  }
+
+  /* Sections */
+  section {
+    padding: 15px 10px;
+  }
+
+  /* Buttons */
+  button {
+    padding: 7px 16px;
+    font-size: 0.9em;
+  }
+
+  /* About Section */
+  .about-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .profile-picture {
+    width: 90%;
+  }
+
+  .profile-picture img {
+    width: 100%;
+    border-radius: 25px 25px 0 25px;
+  }
+
+  .profile-picture h1 {
+    margin-top: 0.5rem;
+    font-size: 1.5em;
+  }
+
+  .about-text {
+    width: 100%;
+    padding: 15px;
+  }
+
+  /* Team Statistics - Stack in single column on mobile */
+  .stats-container {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+  }
+
+  /* Team Member Cards */
+  .team-member {
+    flex-direction: column !important;
+  }
+
+  .team-member-reverse {
+    flex-direction: column !important;
+  }
+
+  .team-member-picture {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 250px;
+    margin: 0 auto 20px;
+  }
+
+  .member-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ========== SERVICE PAGES RESPONSIVE ========== */
+@media (max-width: 768px) {
+  /* Mental & Nutrition Service Cards */
+  .mental-services-grid,
+  .nutrition-services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-card {
+    max-width: 100%;
+  }
+
+  /* Nursing Forms */
+  .nurse-services-wrapper {
+    padding: 20px 15px;
+  }
+
+  .nurse-booking-form,
+  .nurse-registration-form {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .service-card {
+    padding: 20px;
+  }
+
+  .service-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .book-button {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+/* ========== HEADER DROPDOWN RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .dropdown-content {
+    position: relative;
+    box-shadow: none;
+    margin-top: 10px;
+  }
+
+  .dropdown-pointer {
+    display: none;
+  }
+}
+
+/* ========== ACCESSIBILITY & TOUCH TARGETS ========== */
+@media (max-width: 768px) {
+  /* Ensure all clickable elements are at least 44x44px */
+  a, button, input[type="submit"], input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Increase tap target spacing */
+  nav li {
+    padding: 5px 0;
+  }
+}
+
+/* ========== PRINT STYLES ========== */
+@media print {
+  header, footer, .welcome-banner-container, .cookie-banner {
+    display: none;
+  }
+
+  .banner {
+    page-break-after: avoid;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+}

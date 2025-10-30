@@ -1,0 +1,180 @@
+/* Banners & Containers */
+.banner {
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+  justify-content: flex-end; /* Position content towards the bottom */
+  align-items: center; /* Center content horizontally */
+  text-align: center; /* Center text */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+  width: 100%;
+  padding: 20px; /* Add some padding for spacing */
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+}
+
+/* Overlay for darker banners */
+.banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5); /* Uniform dark overlay */
+  z-index: 1;
+}
+
+/* Content inside banners */
+.banner .container {
+  position: absolute;
+  bottom: 1px; /* Position content 30px from the bottom */
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+  text-align: center; /* Center text within the container */
+  z-index: 2; /* Ensure it appears above the overlay */
+  width: 90%; /* Responsive width */
+  max-width: 1200px; /* Constrain width for large screens */
+  padding: 10px 0; /* Add vertical spacing */
+  margin: auto; /* Center container */
+}
+
+/* Header Text Styling */
+.header-text {
+  margin: 0; /* Remove default margin */
+  margin-bottom: 20px; /* Position the text closer to the bottom */
+}
+
+.header-text h1 {
+  font-size: 2.5em; /* Large text for desktop */
+  color: white; /* White text to stand out against overlay */
+  margin: 0; /* Remove extra margin */
+  text-align: center; /* Center the text */
+  line-height: 1.2; /* Ensure readability */
+}
+
+@media (max-width: 768px) {
+  .header-text h1 {
+    font-size: 1.8em; /* Adjust for smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .header-text h1 {
+    font-size: 1.5em; /* Further adjust for very small screens */
+  }
+}
+
+#home-banner {
+  background-image: url("../components/images/nurse-with-child.png");
+  min-height: 820px;
+}
+
+#home-banner h1 {
+  font-size: 4em;
+}
+
+#home-banner2 {
+  background-image: url("../components/images/mental.jpg");
+  height: 300px;
+}
+
+#home-banner2 h1 {
+margin-bottom: 10px;}
+
+#home-banner4 {
+  background-image: url("../components/images/team.jpg");
+  min-height: 820px;
+  margin-bottom: 20px; /* Space between #home-banner4 and #home-banner5 */
+}
+#home-banner4 h1 {
+  font-size: 3em;
+}
+
+#home-banner5 {
+  background-image: url("../components/images/banner_health2.png");
+  min-height: 740px;
+  padding-bottom: 40px; /* Add padding for the mental-block-container */
+  margin-top: 20px; /* Space above #mental-health-services */
+}
+
+#contact-form {
+  background-image: url("../components/images/health_banner.png");
+}
+
+#services {
+  padding: 0px;
+}
+
+.service-link:hover h2 {
+  color: red; /* Set your desired hover color */
+}
+
+.block-container {
+  display: flex;
+  flex-wrap: wrap; /* Enable wrapping for responsive layout */
+  justify-content: space-evenly; /* Evenly distribute blocks */
+  align-items: flex-start; /* Align items to the top for uniform height appearance */
+  gap: 20px; /* Consistent spacing between blocks */
+  margin: 20px 5px 50px 5px; /* Add ?px margin above the container */
+  padding: 30px 30px 10px 30px; /* Add padding for spacing */
+  background: rgba(255, 255, 255, 0.1); /* Subtle background overlay */
+  border-radius: 12px; /* Rounded edges for a polished look */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add depth and emphasis */
+}
+
+.block {
+  flex: 1 1 calc(25% - 20px); /* Dynamically adjust width based on gap */
+  min-width: 200px; /* Minimum width for smaller screens */
+  max-width: 300px; /* Maximum width for consistency */
+  height: 400px; /* Fixed height for uniform appearance */
+  text-align: center; /* Center align content */
+  color: white; /* Keep text readable */
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 3px solid #333; /* Consistent border styling */
+  background: rgba(0, 0, 0, 0.7); /* Add a slight dark overlay for contrast */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Consistent shadow effect */
+  border-radius: 10px; /* Soften block edges */
+  display: flex;
+  flex-direction: column; /* Stack content vertically inside the block */
+  justify-content: center; /* Evenly space content */
+  align-items: center; /* Center align text horizontally */
+}
+
+.block h2 {
+  font-size: 1.7em; /* Adjust heading size for prominence */
+  margin-bottom: 20px;
+  color: #fff; /* White text for readability */
+}
+
+.block p {
+  font-size: 1.27em; /* Standard paragraph size */
+  line-height: 1.6; /* Enhance readability */
+  color: #ddd; /* Slightly lighter text for balance */
+  margin-bottom: 19px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .block-container {
+    flex-direction: column; /* Stack blocks vertically */
+    gap: 15px; /* Adjust spacing */
+    padding: 10px; /* Reduce padding for smaller screens */
+  }
+
+  .block {
+    flex: 1 1 100%; /* Full width for small screens */
+    max-width: none;
+    height: 400px; /* Maintain fixed height */
+  }
+
+  .block h2 {
+    font-size: 1.5em; /* Slightly smaller heading for small screens */
+  }
+
+  .block p {
+    font-size: 0.9em; /* Adjust paragraph size */
+  }
+}

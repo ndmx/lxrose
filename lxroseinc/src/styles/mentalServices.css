@@ -1,0 +1,153 @@
+.mental-block-container {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping */
+    justify-content: space-evenly; /* Evenly distribute blocks */
+    align-items: flex-start; /* Align items to the top for uniform height appearance */
+    gap: 20px; /* Maintain consistent spacing */
+    margin: 70px 5px 60px 5px; /* Add ?px margin above the container */
+    padding: 30px 30px 10px 30px; /* Add padding for spacing */
+    background: #ffffff1a; /* Subtle overlay */
+    border-radius: 12px; /* Soften edges */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add depth */
+  }
+  
+  .mental-block {
+    flex: 1 1 calc(20% - 10px); /* Adjust width dynamically with gap */
+    min-width: 210px;
+    max-width: 300px;
+    height: 400px; /* Adapt height to content */
+    text-align: center;
+    color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 3px solid #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.7); /* Add a slight dark overlay for contrast */
+    display: flex;
+    flex-direction: column; /* Stack content vertically inside the block */
+    justify-content: space-between; /* Evenly space content */
+    align-items: center; /* Center align text horizontally */
+  }
+  
+  @media (max-width: 768px) {
+    .mental-block-container {
+      flex-direction: column; /* Stack items vertically */
+      gap: 15px; /* Adjust spacing */
+      padding: 10px;
+    }
+    .mental-block {
+      flex: 1 1 90%; /* Full width for small screens */
+      max-width: none;
+    }
+  }
+
+  .mental-block h2 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    color: #fff; /* Use white text to match the dark theme */
+  }
+  
+  .mental-block p {
+    font-size: 1em;
+    line-height: 1.6;
+    color: #fff; /* Ensure text is readable */
+    margin-bottom: 19px;
+  }
+  
+  .mental-block button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 0.9em;
+    background-color: #00cc99;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .mental-block button:hover {
+    background-color: #009977; /* Slightly darker green on hover */
+  }
+  
+  .booking-form-container {
+    background-color: #ffffff; /* White background */
+    color: #333333; /* Black text */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Softer shadow */
+    max-width: 500px;
+    margin: 20px auto;
+  }
+  
+  .booking-form-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem; /* Slightly larger heading */
+    color: #333333;
+  }
+  
+  .booking-form-container form div {
+    margin-bottom: 15px;
+  }
+  
+  .booking-form-container label {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 5px;
+    color: #333333; /* Consistent black text */
+  }
+  
+  .booking-form-container input,
+  .booking-form-container textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    background-color: #f5f5f5; /* Light grey background for input fields */
+    color: #333333; /* Black text for input fields */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  
+  .booking-form-container input:focus,
+  .booking-form-container textarea:focus {
+    outline: none;
+    border-color: #00cc99; /* Highlight border on focus */
+    background-color: #ffffff; /* White background on focus */
+  }
+  
+  .booking-form-container input:hover,
+  .booking-form-container textarea:hover {
+    background-color: #f9f9f9; /* Slight hover effect */
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .booking-form-container button {
+    flex: 1;
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #00cc99;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .booking-form-container button:hover {
+    background-color: #009977;
+  }
+  
+  .booking-form-container input::placeholder,
+  .booking-form-container textarea::placeholder {
+    color: #aaaaaa; /* Lighter grey for placeholders */
+    font-size: 0.9rem; /* Slightly smaller font size for placeholders */
+  }

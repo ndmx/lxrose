@@ -1,0 +1,46 @@
+/* main.css */
+
+/* Import Banner Styles */
+@import url('../styles/bannerContainers.css');
+
+/* Import Button Styles */
+@import url('../styles/buttons.css');
+
+/* Import Popup Styles */
+@import url('../styles/popup.css');
+
+/* Import Cookies Styles */
+@import url('../styles/cookies.css');
+
+/* Import Form Styles */
+@import url('../styles/form.css');
+
+/* Import General Styles */
+@import url('../styles/general.css');
+
+/* Import AboutPage Styles */
+@import url('../styles/aboutPage.css');
+
+/* Import Header Styles */
+@import url('../styles/headerNav.css');
+
+/* Import Section Styles */
+@import url('../styles/sections.css');
+
+/* Import Footer Styles */
+@import url('../styles/footer.css');
+
+/* Import NursePage Styles */
+@import url('../styles/nurseServices.css');
+
+/* Import MentalPage Styles */
+@import url('../styles/mentalServices.css');
+
+/* Import NutritionPage Styles */
+@import url('../styles/nutritionServices.css');
+
+/* Import Responsive Styles */
+@import url('../styles/responsiveMedia.css');
+
+/* Import Privacy Policy Styles */
+@import url('../styles/privacyPolicy.css');

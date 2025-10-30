@@ -1,0 +1,33 @@
+/* Section Styles */
+section {
+  padding: 40px 20px;
+  max-width: 100%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+  background-color: #333;
+  color: white;
+  align-items: center;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+section p {
+  max-width: 720px;
+  text-align: justify;
+  margin: 20px auto;
+  font-size: 1.28em;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9); /* Slightly lighter for readability */
+}
+
+#foot {
+  background-color: #333;
+  color: white;
+  text-align: center;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: 100px;
+  max-height: 180px;
+  position: relative;
+  width: 100%;
+}

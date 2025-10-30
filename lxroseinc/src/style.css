@@ -1,0 +1,39 @@
+
+.service-link:hover h2 {
+  color: red; /* Set your desired hover color */
+}
+
+.column1 {
+  float: left;
+  width: 10%;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.dropdown-content {
+  display: block;
+  position: absolute;
+  background-color: #333;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: white;
+  padding: 10px 14px;
+  text-decoration: none;
+  display: block;
+}
+
+
+#register-btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
