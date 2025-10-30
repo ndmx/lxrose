@@ -87,8 +87,9 @@ margin-bottom: 10px;}
 
 #home-banner4 {
   background-image: url("../components/images/team.jpg");
-  min-height: 820px;
-  margin-bottom: 20px; /* Space between #home-banner4 and #home-banner5 */
+  min-height: 300px; /* Reduced from 820px to prevent overlap */
+  padding: 80px 20px 40px 20px; /* Proper padding for title */
+  margin-bottom: 0px; /* No margin needed */
 }
 #home-banner4 h1 {
   font-size: 3em;
@@ -96,9 +97,10 @@ margin-bottom: 10px;}
 
 #home-banner5 {
   background-image: url("../components/images/banner_health2.png");
-  min-height: 740px;
-  padding-bottom: 40px; /* Add padding for the mental-block-container */
-  margin-top: 20px; /* Space above #mental-health-services */
+  min-height: 800px; /* Increased to properly contain service blocks */
+  padding-top: 60px; /* Space for heading */
+  padding-bottom: 60px; /* Space for blocks */
+  margin-top: 0px; /* No gap between banners */
 }
 
 #contact-form {
