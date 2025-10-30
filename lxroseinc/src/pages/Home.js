@@ -127,7 +127,7 @@ const Home = () => {
                 </div>
                 <div className="block">
                   <Link to="/nutritionservices" className="service-link" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <h2>Nutrition Services</h2>
+                    <h2>Nutritional Health Services</h2>
                   </Link>
                   <p>
                   Transform your approach to wellness with LxRose. Our experts craft adaptive nutrition plans powered by real-time insights, ensuring your journey to health is as dynamic as it is effective.
@@ -135,7 +135,7 @@ const Home = () => {
                 </div>
                 <div className="block">
                   <Link to="/nursingservices" className="service-link" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <h2>Nursing Services</h2>
+                    <h2>Nursing Care Services</h2>
                   </Link>
                   <p>
                     Discover the future of care with LxRose. Our nursing services merge traditional expertise with modern innovations, delivering personalized healthcare designed to uplift and transform lives.
