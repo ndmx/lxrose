@@ -149,9 +149,8 @@ margin-bottom: 10px;}
   font-size: 1.7em; /* Adjust heading size for prominence */
   margin-bottom: 20px;
   color: #fff; /* White text for readability */
-  background: rgba(100, 100, 100, 0.5); /* Grey background with transparency */
+  background: transparent; /* Transparent background */
   padding: 15px 20px; /* Consistent padding for uniform dimensions */
-  border-radius: 8px; /* Rounded corners */
   min-height: 60px; /* Minimum height for consistency */
   display: flex;
   align-items: center;
