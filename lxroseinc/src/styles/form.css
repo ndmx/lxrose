@@ -1,0 +1,56 @@
+/* Forms */
+#contact-form {
+    display: flex;
+    justify-content: center;
+  }
+  
+  #contactForm {
+    display: flex;
+    flex-direction: column;
+    width: 850px;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 1em;
+    box-sizing: border-box;
+    font-size: 1rem;
+  }
+  
+  ::placeholder {
+    font-size: 1rem; 
+  }
+  
+  input[type="text"], input[type="email"], textarea {
+    width: calc(100% - 26px);
+    border: 1px solid #ccc;
+    border-radius: 7px;
+    box-sizing: border-box;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  #message {
+    height: 150px;
+  }
+  
+  #customAlertContact, #customAlertJoin {
+    border-radius: 7px;
+    box-sizing: border-box;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  #closeAlertContact, #closeAlertJoin {
+    border: none;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    background: none;
+  }
+  

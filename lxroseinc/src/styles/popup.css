@@ -1,0 +1,257 @@
+/* Welcome Banner - Modern Top Banner Design */
+.welcome-banner-container {
+  position: fixed;
+  top: 80px; /* Below the header */
+  left: 0;
+  right: 0;
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.welcome-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+  max-width: 1000px;
+  width: 100%;
+  backdrop-filter: blur(10px);
+}
+
+/* Banner Content */
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.banner-emoji {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.banner-text {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.banner-text strong {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.banner-text span {
+  font-size: 0.9rem;
+  opacity: 0.95;
+}
+
+.banner-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Banner Buttons */
+.banner-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.banner-btn.primary {
+  background: white;
+  color: #667eea;
+}
+
+.banner-btn.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.banner-btn.secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.banner-btn.secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.banner-btn.close {
+  background: transparent;
+  color: white;
+  padding: 8px 12px;
+  font-size: 1.2rem;
+  opacity: 0.8;
+}
+
+.banner-btn.close:hover:not(:disabled) {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.banner-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Banner Form Content */
+.banner-form-content {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.banner-form {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.form-inputs {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-width: 300px;
+}
+
+.form-inputs input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.form-inputs input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.form-inputs input:focus {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.form-inputs input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Banner Message */
+.banner-message {
+  text-align: center;
+  padding: 10px 0;
+}
+
+.banner-message p {
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .welcome-banner-container {
+    top: 70px;
+    padding: 0 10px;
+  }
+
+  .welcome-banner {
+    padding: 12px 15px;
+  }
+
+  .banner-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .banner-text {
+    min-width: auto;
+  }
+
+  .banner-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .banner-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-inputs {
+    min-width: auto;
+    flex-direction: column;
+  }
+
+  .form-actions {
+    width: 100%;
+  }
+
+  .banner-btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-emoji {
+    font-size: 1.5rem;
+  }
+
+  .banner-text strong {
+    font-size: 1rem;
+  }
+
+  .banner-text span {
+    font-size: 0.85rem;
+  }
+
+  .banner-btn {
+    padding: 8px 15px;
+    font-size: 0.85rem;
+  }
+}

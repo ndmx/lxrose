@@ -1,0 +1,158 @@
+/* Nursing Services Section */
+.nursing-block-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    height: 600px;
+    overflow: hidden; /* Prevent unwanted overflow */
+}
+
+.nursing-block {
+    width: 100%;
+    max-width: 600px;
+    max-height: 550px;
+    overflow-y: auto; /* Add vertical scrolling for overflow content */
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Nurse Forms Wrapper */
+.nurse-services-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Toggle Buttons */
+.nurse-services-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.nurse-toggle-button.active {
+    background: linear-gradient(145deg, #3E4248, #2B2F34); /* Gunmetal gradient */
+    color: white;
+}
+
+.nurse-toggle-button {
+    background: linear-gradient(145deg, #3E4248, #2B2F34); /* Gunmetal gradient */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.nurse-toggle-button:hover {
+    background: linear-gradient(145deg, #2B2F34, #3E4248); /* Reverse gradient */
+    transform: scale(1.05);
+}
+
+/* Forms Styling */
+.nurse-booking-form, .nurse-registration-form {
+    background-color: #f9f9f9;
+    color: black;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    width: 500px;
+    margin: 0 auto;
+    overflow-y: auto; /* Add vertical scrolling */
+    max-height: 450px;
+    box-sizing: border-box;
+}
+
+/* Form Input Fields */
+.nurse-booking-form div, .nurse-registration-form div {
+    margin-bottom: 15px;
+}
+
+.nurse-booking-form label, .nurse-registration-form label {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.nurse-booking-form input,
+.nurse-registration-form input,
+.nurse-booking-form textarea,
+.nurse-registration-form textarea {
+    width: 100%; /* Ensure all inputs have consistent width */
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+/* Grouped Inputs (Patient Age and Start Date) */
+.grouped-inputs {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.grouped-inputs input {
+    flex: 1; /* Equal width for grouped inputs */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+/* Textarea Specific Styling */
+.nurse-booking-form textarea, .nurse-registration-form textarea {
+    resize: vertical;
+}
+
+/* Submit Button */
+.nurse-submit-button {
+    background: linear-gradient(145deg, #3E4248, #2B2F34); /* Gunmetal gradient */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: block;
+    margin: 20px auto;
+}
+
+.nurse-submit-button:hover {
+    background: linear-gradient(145deg, #2B2F34, #3E4248); /* Reverse gradient */
+    transform: scale(1.05); /* Slight zoom on hover */
+}
+
+/* Placeholder Styling */
+.nurse-booking-form input::placeholder,
+.nurse-booking-form textarea::placeholder,
+.nurse-registration-form input::placeholder,
+.nurse-registration-form textarea::placeholder {
+    color: grey;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Scrollbar Styling */
+.nurse-booking-form::-webkit-scrollbar, .nurse-registration-form::-webkit-scrollbar {
+    width: 8px;
+}
+
+.nurse-booking-form::-webkit-scrollbar-thumb, .nurse-registration-form::-webkit-scrollbar-thumb {
+    background: grey;
+    border-radius: 9px;
+}
+
+.nurse-booking-form::-webkit-scrollbar-track, .nurse-registration-form::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
