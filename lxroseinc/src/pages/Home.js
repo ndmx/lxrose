@@ -108,41 +108,39 @@ const Home = () => {
           </p>
         </section>
 
-        <section id="services">
-          <div id="home-banner5" className="banner">
-            <div className="container">
-              <div className="header-text" id="block-h1">
-                <h1>Our Expert-Led Services</h1>
-                <h1>Designed to Transform Your Health Journey</h1>
-              </div>
+        <section id="services" className="home-services-section">
+          <div className="services-header">
+            <h2>Our Expert-Led Services</h2>
+            <p>Choose from our comprehensive range of healthcare services designed to transform your wellbeing</p>
+          </div>
 
-              <div className="block-container">
-                <div className="block">
-                  <Link to="/mentalservices" className="service-link" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <h2>Mental Health Services</h2>
-                  </Link>
-                  <p>
-                  Step into a world where technology meets compassion. At LxRose, we revolutionize therapy with virtual experiences tailored to your mental health journey, making healing immersive and personalized.
-                  </p>
-                </div>
-                <div className="block">
-                  <Link to="/nutritionservices" className="service-link" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <h2>Nutritional Health Services</h2>
-                  </Link>
-                  <p>
-                  Transform your approach to wellness with LxRose. Our experts craft adaptive nutrition plans powered by real-time insights, ensuring your journey to health is as dynamic as it is effective.
-                  </p>
-                </div>
-                <div className="block">
-                  <Link to="/nursingservices" className="service-link" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <h2>Nursing Care Services</h2>
-                  </Link>
-                  <p>
-                    Discover the future of care with LxRose. Our nursing services merge traditional expertise with modern innovations, delivering personalized healthcare designed to uplift and transform lives.
-                  </p>
-                </div>
-              </div>
-            </div>    
+          <div className="home-services-grid">
+            <Link to="/mentalservices" className="home-service-card">
+              <div className="service-icon">🧠</div>
+              <h3>Mental Health Services</h3>
+              <p>
+                Step into a world where technology meets compassion. We revolutionize therapy with virtual experiences tailored to your mental health journey.
+              </p>
+              <span className="service-arrow">Explore →</span>
+            </Link>
+
+            <Link to="/nutritionservices" className="home-service-card">
+              <div className="service-icon">🥗</div>
+              <h3>Nutritional Health Services</h3>
+              <p>
+                Transform your approach to wellness. Our experts craft adaptive nutrition plans powered by real-time insights for dynamic health results.
+              </p>
+              <span className="service-arrow">Explore →</span>
+            </Link>
+
+            <Link to="/nursingservices" className="home-service-card">
+              <div className="service-icon">⚕️</div>
+              <h3>Nursing Care Services</h3>
+              <p>
+                Discover the future of care. Our nursing services merge traditional expertise with modern innovations for personalized healthcare.
+              </p>
+              <span className="service-arrow">Explore →</span>
+            </Link>
           </div>
         </section>
       

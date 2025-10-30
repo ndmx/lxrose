@@ -123,7 +123,6 @@ const Contact = () => {
         <div className="container">
           <div className="header-text">
             <h1>Contact Us</h1>
-            <p className="banner-subtitle">We're here to help you every step of the way</p>
           </div>
         </div>
       </div>

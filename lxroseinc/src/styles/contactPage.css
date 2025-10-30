@@ -84,8 +84,9 @@
 
 .contact-card p {
   font-size: 1rem;
-  color: #7f8c8d;
+  color: #555555;
   margin: 0 0 15px 0;
+  font-weight: 500;
 }
 
 .card-action {
