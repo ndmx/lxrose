@@ -11,7 +11,6 @@ const Home = ({ userId }) => {
   useCookieConsent();
 
   const [user, setUser] = useState(null);
-  const [theme, setTheme] = useState('light');
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -32,10 +31,6 @@ const Home = ({ userId }) => {
   const [activeTab, setActiveTab] = useState("contact");
   const [newMessage, setNewMessage] = useState("");
   const [receiverId, setReceiverId] = useState("");
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
 
   const handleSendMessage = async () => {
     if (!user) return;
@@ -71,7 +66,7 @@ const Home = ({ userId }) => {
   ) || [];
 
   return (
-    <div id="homePage" data-theme={theme}>
+    <div id="homePage">
       <div className="homepage-container">
         <div className="left-section">
           <div className="user-info">
