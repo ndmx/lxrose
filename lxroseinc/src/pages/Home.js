@@ -121,16 +121,25 @@ const Home = () => {
                   <Link to="/mentalservices" className="service-link" style={{ textDecoration: 'none', color: 'inherit' }}>
                     <h2>Mental Health Services</h2>
                   </Link>
+                  <p>
+                  Step into a world where technology meets compassion. At LxRose, we revolutionize therapy with virtual experiences tailored to your mental health journey, making healing immersive and personalized.
+                  </p>
                 </div>
                 <div className="block">
                   <Link to="/nutritionservices" className="service-link" style={{ textDecoration: 'none', color: 'inherit' }}>
                     <h2>Nutritional Health Services</h2>
                   </Link>
+                  <p>
+                  Transform your approach to wellness with LxRose. Our experts craft adaptive nutrition plans powered by real-time insights, ensuring your journey to health is as dynamic as it is effective.
+                  </p>
                 </div>
                 <div className="block">
                   <Link to="/nursingservices" className="service-link" style={{ textDecoration: 'none', color: 'inherit' }}>
                     <h2>Nursing Care Services</h2>
                   </Link>
+                  <p>
+                    Discover the future of care with LxRose. Our nursing services merge traditional expertise with modern innovations, delivering personalized healthcare designed to uplift and transform lives.
+                  </p>
                 </div>
               </div>
             </div>    
