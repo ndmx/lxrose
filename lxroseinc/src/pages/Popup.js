@@ -52,7 +52,6 @@ const Popup = ({ handleClose }) => {
       <div className="welcome-banner">
         {!showForm ? (
           <div className="banner-content">
-            <span className="banner-emoji">👋</span>
             <div className="banner-text">
               <strong>Welcome to LxRose!</strong>
               <span>Join our community for exclusive health tips and updates.</span>

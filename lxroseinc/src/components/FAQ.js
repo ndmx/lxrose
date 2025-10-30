@@ -7,7 +7,7 @@ const FAQ = () => {
   const faqData = [
     {
       category: 'General Questions',
-      icon: '❓',
+      icon: '',
       questions: [
         {
           question: 'What is LxRose?',
@@ -29,7 +29,7 @@ const FAQ = () => {
     },
     {
       category: 'Mental Health Services',
-      icon: '🧠',
+      icon: '',
       questions: [
         {
           question: 'What types of therapy do you offer?',
@@ -55,7 +55,7 @@ const FAQ = () => {
     },
     {
       category: 'Nursing Services',
-      icon: '⚕️',
+      icon: '',
       questions: [
         {
           question: 'How do I book a nurse?',
@@ -81,7 +81,7 @@ const FAQ = () => {
     },
     {
       category: 'Nutrition Services',
-      icon: '🥗',
+      icon: '',
       questions: [
         {
           question: 'What does a nutrition plan include?',
@@ -107,7 +107,7 @@ const FAQ = () => {
     },
     {
       category: 'Professional Registration',
-      icon: '📋',
+      icon: '',
       questions: [
         {
           question: 'How can I join as a healthcare professional?',
@@ -125,7 +125,7 @@ const FAQ = () => {
     },
     {
       category: 'Billing & Privacy',
-      icon: '💳',
+      icon: '',
       questions: [
         {
           question: 'How much do services cost?',
@@ -187,7 +187,6 @@ const FAQ = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="faq-search-input"
         />
-        <span className="search-icon">🔍</span>
       </div>
 
       <div className="faq-content">
