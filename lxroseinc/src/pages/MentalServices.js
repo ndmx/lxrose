@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { addDoc, collection, Timestamp } from 'firebase/firestore'; // Import Firebase functions
 import { db } from '../firebase'; // Ensure Firebase is correctly set up in your project
+import '../styles/servicePages.css'; // Import service pages styling
 
 const mentalHealthServices = [
   {
@@ -98,46 +99,48 @@ const MentalServices = () => {
   };
 
   return (
-    <div>
-      <div id="home-banner4" className="banner">
-        <div className="container">
-          <div className="header-text">
-            <h1>Mental Health Services</h1>
-          </div>
+    <div className="service-page">
+      {/* Hero Banner */}
+      <div className="service-hero-banner">
+        <div className="hero-overlay"></div>
+        <div className="hero-content">
+          <h1 className="hero-title">Mental Health Services</h1>
+          <p className="hero-subtitle">Compassionate care for your mental wellbeing</p>
         </div>
       </div>
 
-      <section id="mental-health-services">
-        <div id="home-banner5" className="banner">
-          <div className="container">
-            <div className="header-text" id="block-h1">
-              <h1>We Offer a variety of Services for your mental wellbeing</h1>
-            </div>
-
-            <div className="mental-block-container">
-              {mentalHealthServices.map((service) => (
-                <div key={service.id} className="mental-block">
-                  <h2>{service.title}</h2>
-                  <p>{service.description}</p>
-                  <button
-                    id="joinUsBtn"
-                    className="center-button"
-                    onClick={() => handleBookClick(service.id)}
-                  >
-                    Book Now
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* Services Section */}
+      <section className="services-section">
+        <div className="section-header">
+          <h2>Our Mental Health Services</h2>
+          <p>Choose from our range of professional therapy sessions designed to support your journey</p>
         </div>
 
-        {/* Booking Form */}
-        {selectedService && (
-          <div ref={formRef} className="booking-form-container">
+        <div className="services-grid">
+          {mentalHealthServices.map((service) => (
+            <div key={service.id} className="service-card">
+              <div className="service-card-content">
+                <h3>{service.title}</h3>
+                <p>{service.description}</p>
+              </div>
+              <button
+                className="service-book-btn"
+                onClick={() => handleBookClick(service.id)}
+              >
+                Book Now
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Booking Form */}
+      {selectedService && (
+        <div ref={formRef} className="booking-form-wrapper">
+          <div className="booking-form-container">
             <h2>Booking for: {selectedService.title}</h2>
             <form onSubmit={handleSubmit} disabled={isFormDisabled}>
-              <div>
+              <div className="form-field">
                 <label>Name</label>
                 <input
                   type="text"
@@ -149,7 +152,7 @@ const MentalServices = () => {
                   disabled={isFormDisabled}
                 />
               </div>
-              <div>
+              <div className="form-field">
                 <label>Email</label>
                 <input
                   type="email"
@@ -161,7 +164,7 @@ const MentalServices = () => {
                   disabled={isFormDisabled}
                 />
               </div>
-              <div>
+              <div className="form-field">
                 <label>Additional Information</label>
                 <textarea
                   name="additionalInfo"
@@ -173,13 +176,12 @@ const MentalServices = () => {
                 />
               </div>
               <div className="form-actions">
-                <button type="submit" id="joinUsBtn" className="center-button" disabled={isFormDisabled}>
+                <button type="submit" className="btn-primary" disabled={isFormDisabled}>
                   {isFormDisabled ? 'Submitting...' : 'Submit Booking'}
                 </button>
                 <button
                   type="button"
-                  id="cancelBtn"
-                  className="center-button"
+                  className="btn-secondary"
                   onClick={handleCancel}
                   disabled={isFormDisabled}
                 >
@@ -188,16 +190,14 @@ const MentalServices = () => {
               </div>
             </form>
             {showAlert && (
-              <div id="customAlertContact" className="form-group">
-                <p id="alertMessageContact">{alertMessage}</p>
-                <button id="closeAlertContact" onClick={() => setShowAlert(false)}>
-                  Close
-                </button>
+              <div className="alert-message">
+                <p>{alertMessage}</p>
+                <button onClick={() => setShowAlert(false)}>Close</button>
               </div>
             )}
           </div>
-        )}
-      </section>
+        </div>
+      )}
     </div>
   );
 };

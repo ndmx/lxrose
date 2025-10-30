@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { addDoc, collection, Timestamp } from 'firebase/firestore'; // Firebase imports
 import { db } from '../firebase'; // Ensure Firebase is correctly set up
+import '../styles/servicePages.css'; // Import service pages styling
 
 const nutritionServices = [
   {
@@ -67,80 +68,87 @@ const NutritionServices = () => {
   };
 
   return (
-    <div>
-      <div id="home-banner4" className="banner">
-        <div className="container">
-          <div className="header-text">
-            <h1>Our Nutritional Health Services</h1>
-          </div>
+    <div className="service-page">
+      {/* Hero Banner */}
+      <div className="service-hero-banner nutrition-hero">
+        <div className="hero-overlay"></div>
+        <div className="hero-content">
+          <h1 className="hero-title">Nutrition Services</h1>
+          <p className="hero-subtitle">Personalized nutrition plans for a healthier you</p>
         </div>
       </div>
 
-      <section id="nutrition">
-        <div id="home-banner5" className="banner">
-          <div className="container">
-            <div className="header-text" id="block-h1">
-              <h1>Get a personalized nutritional health plan</h1>
-            </div>
+      {/* Services Section */}
+      <section className="services-section">
+        <div className="section-header">
+          <h2>Our Nutrition Services</h2>
+          <p>Expert guidance tailored to your health goals and dietary needs</p>
+        </div>
 
-            <div className="nutrition-block-container">
-              {nutritionServices.map((service) => (
-                <div key={service.id} className="nutrition-block">
-                  <h2>{service.title}</h2>
-                  <p>{service.description}</p>
-                  <button id="joinUsBtn" onClick={() => handleBookClick(service.id)}>
-                    Book Now
-                  </button>
-                </div>
-              ))}
+        <div className="services-grid">
+          {nutritionServices.map((service) => (
+            <div key={service.id} className="service-card">
+              <div className="service-card-content">
+                <h3>{service.title}</h3>
+                <p>{service.description}</p>
+              </div>
+              <button
+                className="service-book-btn"
+                onClick={() => handleBookClick(service.id)}
+              >
+                Book Now
+              </button>
             </div>
-          </div>
+          ))}
         </div>
       </section>
 
+      {/* Booking Form */}
       {selectedService && (
-        <div ref={formRef} className="booking-form-container">
-          <h2>{nutritionServices.find((service) => service.id === selectedService)?.title}</h2>
-          <form onSubmit={handleFormSubmit}>
-            <div>
-              <label>Your Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="Enter your name"
-                required
-              />
-            </div>
-            <div>
-              <label>Your Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            <div>
-              <label>Additional Information</label>
-              <textarea
-                name="info"
-                value={formData.info}
-                onChange={handleInputChange}
-                placeholder="Let us know any additional details"
-                required
-              ></textarea>
-            </div>
-            <div className="form-actions">
-              <button type="submit">Submit</button>
-              <button type="button" onClick={handleFormCancel}>
-                Cancel
-              </button>
-            </div>
-          </form>
+        <div ref={formRef} className="booking-form-wrapper">
+          <div className="booking-form-container">
+            <h2>{nutritionServices.find((service) => service.id === selectedService)?.title}</h2>
+            <form onSubmit={handleFormSubmit}>
+              <div className="form-field">
+                <label>Your Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Enter your name"
+                  required
+                />
+              </div>
+              <div className="form-field">
+                <label>Your Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+              <div className="form-field">
+                <label>Additional Information</label>
+                <textarea
+                  name="info"
+                  value={formData.info}
+                  onChange={handleInputChange}
+                  placeholder="Let us know any additional details"
+                  required
+                ></textarea>
+              </div>
+              <div className="form-actions">
+                <button type="submit" className="btn-primary">Submit</button>
+                <button type="button" className="btn-secondary" onClick={handleFormCancel}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
