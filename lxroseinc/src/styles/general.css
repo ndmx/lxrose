@@ -10,7 +10,7 @@ html {
 }
 
 body {
-  background-color: #f4f4f4;
+  background: linear-gradient(135deg, #1a252f 0%, #0f1419 100%);
   font-family: "Book Antiqua", Palatino, "Palatino Linotype", serif;
   background-size: cover;
   background-position: center;
