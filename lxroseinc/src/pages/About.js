@@ -10,7 +10,7 @@ const About = () => {
   const teamMembers = [
     {
       username: 'Alexander',
-      role: 'Healthcare Technology Engineer',
+      role: 'Technologist & Engineer',
       credentials: 'MSc, PEng',
       icon: alexanderIcon,
       description: `An innovative engineer and designer who excels in merging healthcare and technology. 
@@ -20,7 +20,7 @@ const About = () => {
     {
       username: 'Roberta',
       role: 'Nutrition Specialist',
-      credentials: 'RD, MSc Nutrition',
+      credentials: 'MSc Nutrition',
       icon: robertaIcon,
       description: `Our in-house Nutrition Specialist passionately advocates for a balanced lifestyle through thoughtful food choices. 
       She focuses on the intrinsic relationship between a healthy body and mind. Offering both preventive and therapeutic nutrition plans, her holistic methods contribute to overall wellness, both physically and mentally.`,
@@ -28,7 +28,7 @@ const About = () => {
     {
       username: 'Laura',
       role: 'Psychological Art Therapist',
-      credentials: 'PhD, ATR-BC',
+      credentials: 'BSc, ATR-BC',
       icon: lauraIcon,
       description: `Her work centers around creating immersive experiences that prompt meaningful engagement and emotional resonance, 
       making her a vital asset in our holistic approach to health. By using visual and mental cues, she opens doors to deeper self-understanding and quicker recovery. 
@@ -37,7 +37,7 @@ const About = () => {
     {
       username: 'Kunmi',
       role: 'Registered Nurse & Healthcare Professional',
-      credentials: 'RN, BScN',
+      credentials: 'LPN, BScN',
       icon: kunmiIcon,
       description: `Our versatile In-House Nurse and Healthcare Professional brings a wealth of experience from various medical settings, 
       including mental health units across Canada. Her deep understanding of patient care, particularly in high-stakes environments, has made her invaluable to both colleagues and patients. 
@@ -73,11 +73,11 @@ const About = () => {
         <section id="team-stats-section">
           <div className="stats-container">
             <div className="stat-item">
-              <div className="stat-number">50+</div>
+              <div className="stat-number">30+</div>
               <div className="stat-label">Years Combined Experience</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">1000+</div>
+              <div className="stat-number">500+</div>
               <div className="stat-label">Patients Helped</div>
             </div>
             <div className="stat-item">
