@@ -134,7 +134,7 @@ margin-bottom: 10px;}
   padding: 20px;
   margin-bottom: 20px;
   border: 3px solid #333; /* Consistent border styling */
-  background: rgba(0, 0, 0, 0.7); /* Add a slight dark overlay for contrast */
+  background: transparent; /* Transparent background like service pages */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Consistent shadow effect */
   border-radius: 10px; /* Soften block edges */
   display: flex;
@@ -147,6 +147,8 @@ margin-bottom: 10px;}
   font-size: 1.7em; /* Adjust heading size for prominence */
   margin-bottom: 20px;
   color: #fff; /* White text for readability */
+  background: transparent; /* No background, just like service pages */
+  padding: 0;
 }
 
 .block p {

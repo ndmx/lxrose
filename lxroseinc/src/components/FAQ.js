@@ -167,11 +167,17 @@ const FAQ = () => {
   })).filter(category => category.questions.length > 0);
 
   return (
-    <div className="faq-container">
-      <div className="faq-header">
-        <h1>Frequently Asked Questions</h1>
-        <p>Find answers to common questions about our services</p>
+    <div>
+      <div id="home-banner4" className="banner">
+        <div className="container">
+          <div className="header-text">
+            <h1>Frequently Asked Questions</h1>
+            <p className="banner-subtitle">Find answers to common questions about our services</p>
+          </div>
+        </div>
       </div>
+
+      <div className="faq-container">
 
       <div className="faq-search">
         <input
@@ -231,6 +237,7 @@ const FAQ = () => {
         <h3>Still have questions?</h3>
         <p>Can't find what you're looking for? Our team is here to help!</p>
         <a href="/contact" className="contact-button">Contact Us</a>
+      </div>
       </div>
     </div>
   );
