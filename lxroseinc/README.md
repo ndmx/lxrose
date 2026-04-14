@@ -20,44 +20,47 @@ This project is a web application designed to provide nursing, mental health, an
 
 - **Frontend**:
   - React.js
+  - Vite build tooling
   - HTML5/CSS3
   - Responsive design with media queries
 - **Backend**:
   - Firebase Firestore (Database)
   - Firebase Hosting
 - **Styling**:
-  - Custom CSS files (e.g., `form.css`, `nurseServices.css`)
+  - Grouped custom CSS files in `src/styles`
   - Media queries for device-specific optimizations
 - **Deployment**:
   - Firebase Hosting
-  - `react-scripts` build process for production
+  - `vite build` production output in `dist`
 
 ---
 
 ## Project Structure
 
-/src
-/components
-- HeaderNav.js
-- Footer.js
-/pages
-- NursingServices.js
-- MentalServices.js
-- NutritionServices.js
-- About.js
-- Contact.js
-/utils
-- NursingForms.js
-/css
-- headerNav.css
-- footer.css
-- general.css
-- form.css
-- nurseServices.css
-- mentalServices.css
-- nutritionServices.css
-- sections.css
-/
+```
+src/
+  admin/
+  components/
+  hooks/
+  pages/
+  styles/
+  utils/
+```
+
+Development
+
+```bash
+npm install
+npm run dev
+```
+
+Production build
+
+```bash
+npm run build
+```
+
+The build output is written to `dist/` for Firebase Hosting.
 
 Usage
 	1.	Navigate to the home page.

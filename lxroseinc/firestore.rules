@@ -2,18 +2,67 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function publicSubmissionFields() {
+      return request.resource.data.keys().hasOnly([
+        'name',
+        'email',
+        'phone',
+        'subject',
+        'message',
+        'timestamp',
+        'additionalInfo',
+        'service',
+        'serviceId',
+        'serviceTitle',
+        'serviceType',
+        'patientAge',
+        'careDuration',
+        'startDate',
+        'contactInfo',
+        'additionalNotes',
+        'qualifications',
+        'yearsOfExperience',
+        'availability',
+        'info'
+      ]);
+    }
 
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
+    function hasTimestamp() {
+      return request.resource.data.timestamp is timestamp;
+    }
+
+    match /contactForms/{documentId} {
+      allow create: if publicSubmissionFields() && hasTimestamp();
+      allow read, update, delete: if false;
+    }
+
+    match /joinForms/{documentId} {
+      allow create: if publicSubmissionFields() && hasTimestamp();
+      allow read, update, delete: if false;
+    }
+
+    match /mentalServicesBookings/{documentId} {
+      allow create: if publicSubmissionFields() && hasTimestamp();
+      allow read, update, delete: if false;
+    }
+
+    match /nursingServiceBookings/{documentId} {
+      allow create: if publicSubmissionFields() && hasTimestamp();
+      allow read, update, delete: if false;
+    }
+
+    match /nurseRegistrations/{documentId} {
+      allow create: if publicSubmissionFields() && hasTimestamp();
+      allow read, update, delete: if false;
+    }
+
+    match /nutritionServiceBookings/{documentId} {
+      allow create: if publicSubmissionFields() && hasTimestamp();
+      allow read, update, delete: if false;
+    }
+
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2024, 12, 30);
+      allow read, write: if false;
     }
   }
 }

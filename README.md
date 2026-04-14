@@ -1,6 +1,6 @@
 # LxRose Project
 
-This repository contains the codebase for two websites and their shared backend:
+This repository contains one domain-aware React frontend and one shared backend:
 
 ## Features
 
@@ -54,8 +54,9 @@ This repository contains the codebase for two websites and their shared backend:
 ## Project Structure
 
 ### 1. lxroseinc/
-**Website:** [lxroseinc.com](https://lxroseinc.com)  
-**Description:** Main public-facing website providing nursing, mental health, and nutrition services.
+**Websites:** [lxroseinc.com](https://lxroseinc.com) and [lxrose.org](https://lxrose.org)
+
+**Description:** Unified React frontend. It renders the public website on `lxroseinc.com` and the admin dashboard on `lxrose.org`.
 
 **Technology Stack:**
 - React 18.2.0
@@ -63,13 +64,20 @@ This repository contains the codebase for two websites and their shared backend:
 - Firebase 10.4.0 (Firestore, Hosting)
 - Swiper 11.0.7 (carousel/slider)
 
-**Features:**
+**Public Features:**
 - Service pages (Nursing, Mental Health, Nutrition)
 - About and Contact pages
 - Service booking forms
 - Professional registration forms
 - Cookie consent management
 - Promotional popups
+
+**Admin Features:**
+- Backend-backed admin login
+- User authentication and management
+- View contact form submissions
+- View join/registration form submissions
+- Messaging system
 
 **Setup:**
 ```bash
@@ -79,37 +87,13 @@ npm start          # Development server on http://localhost:3000
 npm run build      # Production build
 ```
 
-**Firebase Deployment:**
-```bash
-firebase deploy --only hosting
+Optional local `lxroseinc/.env`:
+```env
+REACT_APP_API_BASE_URL=http://localhost:5001
+# REACT_APP_SITE_MODE=admin
 ```
 
----
-
-### 2. lxroseorg/
-**Website:** [lxrose.org](https://lxrose.org)  
-**Description:** Administrative dashboard for managing users, forms, and content.
-
-**Technology Stack:**
-- React 18.2.0
-- React Router v6
-- Firebase 10.4.0 (Firestore, Authentication, Storage)
-- date-fns 4.1.0
-
-**Features:**
-- User authentication and management
-- Create and manage admin users
-- View contact form submissions
-- View join/registration form submissions
-- Messaging system
-
-**Setup:**
-```bash
-cd lxroseorg
-npm install
-npm start          # Development server on http://localhost:3000
-npm run build      # Production build
-```
+Uncomment `REACT_APP_SITE_MODE=admin` locally to force the admin dashboard on `localhost`. Do not set `REACT_APP_SITE_MODE` in production unless you intentionally want to override domain-based routing.
 
 **Firebase Deployment:**
 ```bash
@@ -118,7 +102,7 @@ firebase deploy --only hosting
 
 ---
 
-### 3. backend/
+### 2. backend/
 **Description:** Express.js backend server providing API endpoints for both websites.
 
 **Technology Stack:**
@@ -220,11 +204,20 @@ FIREBASE_ADMIN_SDK_PATH=./lxroseinc-firebase-adminsdk-5g2cj-df13bfcd94.json
 JWT_SECRET=your_generated_secret_from_step_3
 PORT=5001
 FIREBASE_DATABASE_URL=https://lxroseinc-default-rtdb.firebaseio.com
+ADMIN_API_KEY=your_generated_admin_api_key
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:5174,https://lxroseinc.com,https://www.lxroseinc.com,https://lxrose.org,https://www.lxrose.org
 ```
 
 ### Frontend Configuration
 
-The frontend Firebase configurations (lxroseinc and lxroseorg) are already set up and can be used as-is. These client-side API keys are safe to be public and are protected by Firebase Security Rules.
+The frontend Firebase configuration is already set up and can be used as-is. These client-side API keys are safe to be public and are protected by Firebase Security Rules.
+
+The admin dashboard also calls the backend login endpoint. Set `REACT_APP_API_BASE_URL` in `lxroseinc/.env` for local development or in your hosting environment for production.
+
+The frontend chooses which experience to render from the hostname:
+- `lxroseinc.com` and `www.lxroseinc.com` render the public site
+- `lxrose.org` and `www.lxrose.org` render the admin dashboard
+- `REACT_APP_SITE_MODE=admin` forces admin mode locally
 
 ### Security Notes
 
@@ -248,35 +241,26 @@ The frontend Firebase configurations (lxroseinc and lxroseorg) are already set u
 1. **Install dependencies** in each folder:
    ```bash
    cd lxroseinc && npm install
-   cd ../lxroseorg && npm install
    cd ../backend && npm install
    ```
 
 2. **Start development servers:**
    ```bash
-   # Terminal 1 - Frontend (lxroseinc)
+   # Terminal 1 - Unified frontend
    cd lxroseinc && npm start
 
-   # Terminal 2 - Admin (lxroseorg)
-   cd lxroseorg && npm start
-
-   # Terminal 3 - Backend
+   # Terminal 2 - Backend
    cd backend && npm run dev
    ```
 
 3. **Build for production:**
    ```bash
    cd lxroseinc && npm run build
-   cd ../lxroseorg && npm run build
    ```
 
 4. **Deploy to Firebase:**
    ```bash
-   # Deploy main website
    cd lxroseinc && firebase deploy --only hosting
-
-   # Deploy admin dashboard
-   cd lxroseorg && firebase deploy --only hosting
    ```
 
 ---
@@ -284,7 +268,7 @@ The frontend Firebase configurations (lxroseinc and lxroseorg) are already set u
 ## Important Notes
 
 - The backend server requires the Firebase Admin SDK credentials file to be present in the `backend/` folder
-- Both frontends connect to the same Firebase project
+- The unified frontend connects to the same Firebase project for both domains
 - The admin dashboard requires authentication before accessing features
 - All forms submit data to Firebase Firestore
 - The main website uses hash routing (`HashRouter`) for client-side routing
@@ -293,8 +277,7 @@ The frontend Firebase configurations (lxroseinc and lxroseorg) are already set u
 
 ## GitHub Repositories
 
-- **Main Website (lxroseinc.com):** [https://github.com/ndmx/lxroseapp.git](https://github.com/ndmx/lxroseapp.git)
-- **Admin Dashboard (lxrose.org):** [https://github.com/ndmx/admin.git](https://github.com/ndmx/admin.git)
+- **Unified Frontend and Backend:** [https://github.com/ndmx/lxroseapp.git](https://github.com/ndmx/lxroseapp.git)
 
 ---
 
@@ -302,3 +285,6 @@ The frontend Firebase configurations (lxroseinc and lxroseorg) are already set u
 
 This project is proprietary and confidential.
 
+---
+
+**Designed by edentv** - Creator Studio

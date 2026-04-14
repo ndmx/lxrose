@@ -1,0 +1,52 @@
+/* =================================================================
+   Shared CSS Variables — consumed by both public and admin sites
+   ================================================================= */
+:root {
+  /* Brand colours */
+  --color-blue:        #0071e3;
+  --color-blue-dark:   #0066cc;
+  --color-blue-soft:   #f3f8ff;
+  --color-blue-border: #c9dcff;
+
+  /* Text */
+  --color-ink:    #242a2f;
+  --color-muted:  #606b74;
+  --color-subtle: #95a5a6;
+
+  /* Surfaces */
+  --color-bg:        #ffffff;
+  --color-bg-soft:   #f7fbfc;
+  --color-bg-panel:  linear-gradient(180deg, #ffffff 0%, #f7fbfc 100%);
+
+  /* Borders */
+  --color-border: #d8e5e7;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius:    8px;
+  --radius-lg: 12px;
+
+  /* Shadows */
+  --shadow:    0 10px 28px rgba(0, 113, 227, 0.07);
+  --shadow-sm: 0 4px  16px rgba(0, 113, 227, 0.08);
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+
+  /* Public site skin */
+  --care-bg: #f7fbfc;
+  --care-panel: #ffffff;
+  --care-panel-soft: #f3f8ff;
+  --care-ink: #242a2f;
+  --care-muted: #606b74;
+  --care-line: #d8e5e7;
+  --care-blue: #0071e3;
+  --care-blue-dark: #0066cc;
+  --care-blue-soft: #f5faff;
+  --care-coral: #d65a4a;
+  --care-gold: #f2c94c;
+  --care-shadow: 0 18px 44px rgba(0, 113, 227, 0.1);
+  --care-soft-shadow: 0 10px 28px rgba(0, 113, 227, 0.07);
+  --site-gutter: 32px;
+  --site-max-width: 1440px;
+}

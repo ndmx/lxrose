@@ -1,0 +1,324 @@
+
+/* Source: popup.css */
+/* Welcome Banner - Modern Top Banner Design */
+.welcome-banner-container {
+  position: fixed;
+  top: 80px; /* Below the header */
+  left: 0;
+  right: 0;
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.welcome-banner {
+  background: #ffffff;
+  color: #242a2f;
+  padding: 15px 25px;
+  border: 1px solid #d8e5e7;
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 113, 227, 0.07);
+  max-width: 1000px;
+  width: 100%;
+  backdrop-filter: blur(10px);
+}
+
+/* Banner Content */
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.banner-text {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.banner-text strong {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.banner-text span {
+  font-size: 0.9rem;
+  opacity: 0.95;
+}
+
+.banner-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Banner Buttons */
+.banner-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.banner-btn.primary {
+  background: #0071e3;
+  color: #ffffff;
+}
+
+.banner-btn.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: none;
+}
+
+.banner-btn.secondary {
+  background: #ffffff;
+  color: #0071e3;
+  border: 1px solid #0071e3;
+  box-shadow: inset 0 0 0 1px #ffffff;
+}
+
+.banner-btn.secondary:hover:not(:disabled) {
+  background: #0071e3;
+  color: #ffffff;
+}
+
+.banner-btn.close {
+  background: transparent;
+  color: #606b74;
+  padding: 8px 12px;
+  font-size: 1.2rem;
+  opacity: 0.8;
+}
+
+.banner-btn.close:hover:not(:disabled) {
+  opacity: 1;
+  background: #f3f8ff;
+}
+
+.banner-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Banner Form Content */
+.banner-form-content {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.banner-form {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.form-inputs {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-width: 300px;
+}
+
+.form-inputs input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid #d8e5e7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #242a2f;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.form-inputs input::placeholder {
+  color: #8a969f;
+}
+
+.form-inputs input:focus {
+  border-color: #0071e3;
+  background: #ffffff;
+}
+
+.form-inputs input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.banner-form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Banner Message */
+.banner-message {
+  text-align: center;
+  padding: 10px 0;
+}
+
+.banner-message p {
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .welcome-banner-container {
+    top: 70px;
+    padding: 0 10px;
+  }
+
+  .welcome-banner {
+    padding: 12px 15px;
+  }
+
+  .banner-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .banner-text {
+    min-width: auto;
+  }
+
+  .banner-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .banner-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-inputs {
+    min-width: auto;
+    flex-direction: column;
+  }
+
+  .banner-form-actions {
+    width: 100%;
+  }
+
+  .banner-btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-text strong {
+    font-size: 1rem;
+  }
+
+  .banner-text span {
+    font-size: 0.85rem;
+  }
+
+  .banner-btn {
+    padding: 8px 15px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Source: cookies.css */
+.cookie-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    text-align: center;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .cookie-banner p {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+  
+  .cookie-banner a {
+    color: #0071e3;
+    text-decoration: underline;
+  }
+  
+  .cookie-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .cookie-buttons button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  
+  .cookie-buttons .accept {
+    background-color: #0071e3;
+    color: white;
+  }
+  
+  .cookie-buttons .accept:hover {
+    background-color: #0066cc;
+  }
+  
+  .cookie-buttons .reject {
+    background-color: #444;
+    color: white;
+  }
+  
+  .cookie-buttons .reject:hover {
+    background-color: #666;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }

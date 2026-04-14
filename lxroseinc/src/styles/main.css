@@ -1,46 +1,12 @@
-/* main.css */
+/* main.css - public style entry point */
 
-/* Import Banner Styles */
-@import url('../styles/bannerContainers.css');
+@import url('./variables.css');
+@import url('./site.css');
+@import url('./home.css');
+@import url('./footer.css');
+@import url('./overlays.css');
 
-/* Import Button Styles */
-@import url('../styles/buttons.css');
-
-/* Import Popup Styles */
-@import url('../styles/popup.css');
-
-/* Import Cookies Styles */
-@import url('../styles/cookies.css');
-
-/* Import Form Styles */
-@import url('../styles/form.css');
-
-/* Import General Styles */
-@import url('../styles/general.css');
-
-/* Import AboutPage Styles */
-@import url('../styles/aboutPage.css');
-
-/* Import Header Styles */
-@import url('../styles/headerNav.css');
-
-/* Import Section Styles */
-@import url('../styles/sections.css');
-
-/* Import Footer Styles */
-@import url('../styles/footer.css');
-
-/* Import NursePage Styles */
-@import url('../styles/nurseServices.css');
-
-/* Import MentalPage Styles */
-@import url('../styles/mentalServices.css');
-
-/* Import NutritionPage Styles */
-@import url('../styles/nutritionServices.css');
-
-/* Import Responsive Styles */
-@import url('../styles/responsiveMedia.css');
-
-/* Import Privacy Policy Styles */
-@import url('../styles/privacyPolicy.css');
+/* Pages */
+@import url('./pages.css');
+@import url('./contactPage.css');
+@import url('./servicePages.css');

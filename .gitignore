@@ -51,6 +51,8 @@ coverage/
 .parcel-cache/
 .eslintcache
 .firebase/
+backend/lxroseinc-firebase-adminsdk-*.json
+lxroseinc-firebase-adminsdk-*.json
 
 # Temporary files
 *.tmp

@@ -1,0 +1,751 @@
+
+/* Source: bannerContainers.css */
+/* Banners & Containers */
+.banner {
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
+  text-align: center; /* Center text */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 20px; /* Add some padding for spacing */
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+  overflow: hidden;
+}
+
+/* Overlay for darker banners */
+.banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5); /* Uniform dark overlay */
+  z-index: 1;
+}
+
+/* Content inside banners */
+.banner .container {
+  position: relative;
+  text-align: center; /* Center text within the container */
+  z-index: 2; /* Ensure it appears above the overlay */
+  width: 90%; /* Responsive width */
+  max-width: 1200px; /* Constrain width for large screens */
+  padding: 10px 0; /* Add vertical spacing */
+  margin: auto; /* Center container */
+}
+
+/* Header Text Styling */
+.header-text {
+  margin: 0; /* Remove default margin */
+}
+
+.header-text h1 {
+  font-size: 2.5em; /* Large text for desktop */
+  color: white; /* White text to stand out against overlay */
+  margin: 0; /* Remove extra margin */
+  text-align: center; /* Center the text */
+  line-height: 1.2; /* Ensure readability */
+}
+
+@media (max-width: 768px) {
+  .header-text h1 {
+    font-size: 1.8em; /* Adjust for smaller screens */
+  }
+
+  .banner {
+    min-height: 250px;
+    padding: 20px;
+  }
+
+  .banner .container,
+  .container {
+    padding: 5px;
+  }
+
+  #home-banner {
+    min-height: 520px;
+  }
+
+  #home-banner h1 {
+    font-size: 2.25em;
+  }
+
+  section {
+    padding: 20px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-text h1 {
+    font-size: 1.5em; /* Further adjust for very small screens */
+  }
+
+  .banner {
+    min-height: 200px;
+  }
+
+  #home-banner {
+    min-height: 420px;
+  }
+
+  #home-banner4 {
+    min-height: 240px;
+  }
+
+  section {
+    padding: 15px 10px;
+  }
+}
+
+#home-banner {
+  background-image: url("../components/images/nurse-with-child.png");
+  min-height: 620px;
+  margin-top: 88px;
+}
+
+#home-banner h1 {
+  font-size: 4em;
+}
+
+#home-banner4 {
+  background-image: url("../components/images/team.jpg");
+  min-height: 360px;
+  margin-top: 88px;
+  padding: 48px 24px;
+  margin-bottom: 0px; /* No margin needed */
+}
+#home-banner4 h1 {
+  font-size: 3em;
+}
+
+#home-banner5 {
+  background-image: url("../components/images/banner_health2.png");
+  min-height: 800px; /* Increased to properly contain service blocks */
+  padding-top: 60px; /* Space for heading */
+  padding-bottom: 60px; /* Space for blocks */
+  margin-top: 0px; /* No gap between banners */
+}
+
+#contact-form {
+  background: #ffffff;
+}
+
+#services {
+  padding: 0px;
+}
+
+.service-link:hover h2 {
+  color: red; /* Set your desired hover color */
+}
+
+.block-container {
+  display: flex;
+  flex-wrap: wrap; /* Enable wrapping for responsive layout */
+  justify-content: space-evenly; /* Evenly distribute blocks */
+  align-items: flex-start; /* Align items to the top for uniform height appearance */
+  gap: 20px; /* Consistent spacing between blocks */
+  margin: 20px 5px 50px 5px; /* Add ?px margin above the container */
+  padding: 30px 30px 10px 30px; /* Add padding for spacing */
+  background: rgba(255, 255, 255, 0.1); /* Subtle background overlay */
+  border-radius: 12px; /* Rounded edges for a polished look */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add depth and emphasis */
+}
+
+.block {
+  flex: 1 1 calc(25% - 20px); /* Dynamically adjust width based on gap */
+  min-width: 200px; /* Minimum width for smaller screens */
+  max-width: 300px; /* Maximum width for consistency */
+  height: 400px; /* Fixed height for uniform appearance */
+  text-align: center; /* Center align content */
+  color: white; /* Keep text readable */
+  padding: 20px;
+  margin-bottom: 20px;
+  background: transparent; /* Transparent background like service pages */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Consistent shadow effect */
+  display: flex;
+  flex-direction: column; /* Stack content vertically inside the block */
+  justify-content: center; /* Evenly space content */
+  align-items: center; /* Center align text horizontally */
+}
+
+.block h2 {
+  font-size: 1.7em; /* Adjust heading size for prominence */
+  margin-bottom: 20px;
+  color: #fff; /* White text for readability */
+  background: transparent; /* Transparent background */
+  padding: 15px 20px; /* Consistent padding for uniform dimensions */
+  min-height: 60px; /* Minimum height for consistency */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.block p {
+  font-size: 1.27em; /* Standard paragraph size */
+  line-height: 1.6; /* Enhance readability */
+  color: #ddd; /* Slightly lighter text for balance */
+  margin-bottom: 19px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .block-container {
+    flex-direction: column; /* Stack blocks vertically */
+    gap: 15px; /* Adjust spacing */
+    padding: 10px; /* Reduce padding for smaller screens */
+  }
+
+  .block {
+    flex: 1 1 100%; /* Full width for small screens */
+    max-width: none;
+    height: 400px; /* Maintain fixed height */
+  }
+
+  .block h2 {
+    font-size: 1.5em; /* Slightly smaller heading for small screens */
+  }
+
+  .block p {
+    font-size: 0.9em; /* Adjust paragraph size */
+  }
+}
+
+/* Source: buttons.css */
+/* General Button Styles */
+button {
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color .3s;
+  color: white;
+}
+
+/* Unique Button Styles for Sections */
+
+/* Header Button */
+#headerBtn {
+  background-color: #0071e3;
+}
+
+#headerBtn:hover {
+  background-color: #0056b3;
+}
+
+/* Join Us Button */
+#joinUsBtn {
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color .3s;
+  color: white;
+  background: linear-gradient(145deg, #3E4248, #2B2F34); /* Gunmetal gradient */
+  border: none;
+  border-radius: 10px;
+  display: block;
+  margin: 0 auto; /* Centers the button horizontally */
+  transition: transform 0.2s, background-color 0.2s; /* Smooth transition for hover effects */
+}
+
+#joinUsBtn:hover {
+  background: linear-gradient(145deg, #2B2F34, #3E4248); /* Reverse gradient */
+  transform: scale(1.05); /* Slight zoom on hover */
+}
+
+.center-button a {
+  color: white;
+}
+
+#home-contact-form-btn {
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color .3s;
+  color: white;
+  border-radius: 7px;
+  max-width: 100px;
+  margin-left: 12px;
+  background: linear-gradient(145deg, #3E4248, #2B2F34); /* Gunmetal gradient */
+
+}
+
+#home-contact-form-btn:hover {
+  background: linear-gradient(145deg, #2B2F34, #3E4248); /* Reverse gradient */
+  transform: scale(1.05); /* Slight zoom on hover */
+}
+
+#primary-cta-button {
+  background-color: #0071e3;
+  border: 1px solid #0071e3;
+  color: white;
+  padding: 12px 24px;
+  text-align: center;
+  font-size: 1em;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: none;
+  animation: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+#primary-cta-button:hover {
+  background-color: #0066cc;
+  border-color: #0066cc;
+  transform: translateY(-1px);
+}
+
+#color-changing-button {
+  background: #0071e3;
+  border: 1px solid #0071e3;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  font-size: 1em;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  animation: none;
+  box-shadow: none;
+}
+
+/* Source: sections.css */
+/* Section Styles */
+section {
+  padding: 40px 20px;
+  max-width: 100%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+  background: #ffffff;
+  color: #242a2f;
+  align-items: center;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+section p {
+  max-width: 720px;
+  text-align: justify;
+  margin: 20px auto;
+  font-size: 1.28em;
+  line-height: 1.6;
+  color: #606b74;
+}
+
+#foot {
+  display: none;
+}
+
+/* ============================================
+   HOME SERVICES SECTION - MODERN DESIGN
+   ============================================ */
+
+.home-services-section {
+  padding: 80px 20px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%) !important;
+}
+
+.services-header {
+  text-align: center;
+  margin-bottom: 60px;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.services-header h2 {
+  font-size: 2.8rem;
+  color: #242a2f;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.services-header p {
+  font-size: 1.2rem;
+  color: #606b74;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.home-services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.home-service-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #d8e5e7;
+  backdrop-filter: blur(10px);
+  text-decoration: none;
+  color: #242a2f;
+  animation: fadeInUp 0.6s ease-out both;
+  min-height: 380px;
+}
+
+.home-service-card:nth-child(1) { animation-delay: 0.1s; }
+.home-service-card:nth-child(2) { animation-delay: 0.2s; }
+.home-service-card:nth-child(3) { animation-delay: 0.3s; }
+
+.home-service-card:hover {
+  transform: translateY(-15px);
+  background: #ffffff;
+  border-color: rgba(0, 113, 227, 0.26);
+  box-shadow: 0 10px 28px rgba(0, 113, 227, 0.07);
+}
+
+.service-icon {
+  font-size: 4rem;
+  margin-bottom: 25px;
+  transition: all 0.4s ease;
+}
+
+.home-service-card:hover .service-icon {
+  transform: scale(1.15) rotate(5deg);
+}
+
+.home-service-card h3 {
+  font-size: 1.8rem;
+  color: #242a2f;
+  margin-bottom: 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.home-service-card:hover h3 {
+  color: #0066cc;
+}
+
+.home-service-card p {
+  font-size: 1rem;
+  color: #606b74;
+  line-height: 1.7;
+  margin-bottom: 25px;
+  flex: 1;
+}
+
+.service-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0071e3;
+  transition: all 0.3s ease;
+}
+
+.home-service-card:hover .service-arrow {
+  color: #0066cc;
+  transform: translateX(5px);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1024px) {
+  .services-header h2 {
+    font-size: 2.3rem;
+  }
+
+  .home-services-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-services-section {
+    padding: 50px 20px !important;
+  }
+
+  .services-header h2 {
+    font-size: 2rem;
+  }
+
+  .services-header p {
+    font-size: 1.05rem;
+  }
+
+  .home-services-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .home-service-card {
+    padding: 30px 25px;
+    min-height: auto;
+  }
+
+  .service-icon {
+    font-size: 3.5rem;
+  }
+
+  .home-service-card h3 {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .services-header h2 {
+    font-size: 1.7rem;
+  }
+
+  .service-icon {
+    font-size: 3rem;
+  }
+
+  .home-service-card h3 {
+    font-size: 1.4rem;
+  }
+}
+
+/* Source: form.css */
+/* Forms */
+#contact-form {
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px 56px;
+}
+
+.home-contact-form-section {
+  border-top: 0;
+}
+
+.home-contact-panel {
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbfc 100%);
+  border: 1px solid #d8e5e7;
+  border-radius: 8px;
+  display: grid;
+  gap: 34px;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+  max-width: 1060px;
+  padding: 34px;
+  width: 100%;
+}
+
+.home-contact-intro {
+  align-self: center;
+  text-align: left;
+}
+
+.home-contact-intro span {
+  color: #0066cc;
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 760;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.home-contact-intro h3 {
+  color: #242a2f;
+  font-size: clamp(1.6rem, 3vw, 2.35rem);
+  line-height: 1.12;
+  margin: 0 0 16px;
+  text-align: left;
+}
+
+.home-contact-intro p {
+  color: #606b74;
+  font-size: 1rem;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 360px;
+  text-align: left;
+}
+
+#contactForm,
+.home-contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+}
+
+.home-form-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+
+.form-group label {
+  color: #242a2f;
+  font-size: 0.96rem;
+  font-weight: 680;
+  text-align: left;
+}
+
+.form-group input,
+.form-group textarea,
+input[type="text"],
+input[type="email"],
+textarea {
+  background: #ffffff;
+  border: 1px solid #d8e5e7;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #242a2f;
+  display: block;
+  font-size: 1rem;
+  line-height: 1.4;
+  margin: 0;
+  padding: 14px 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  width: 100%;
+}
+
+.form-group textarea,
+#home-message {
+  min-height: 150px;
+  resize: vertical;
+}
+
+::placeholder {
+  color: #8a969f;
+  font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+textarea:focus {
+  background: #ffffff;
+  border-color: #0071e3;
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
+  outline: 0;
+}
+
+.form-group input:disabled,
+.form-group textarea:disabled {
+  background: #f1f6f7;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+#home-contact-form-btn {
+  align-self: flex-start;
+  background: #0071e3;
+  border: 1px solid #0071e3;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 720;
+  margin: 0;
+  max-width: none;
+  padding: 14px 22px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+#home-contact-form-btn:hover:not(:disabled) {
+  background: #0066cc;
+  border-color: #0066cc;
+  transform: translateY(-1px);
+}
+
+#home-contact-form-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+#customAlertContact,
+#customAlertJoin {
+  align-items: center;
+  background: #f3f8ff;
+  border: 1px solid #c9dcff;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #0066cc;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 14px 16px;
+}
+
+#customAlertContact p,
+#customAlertJoin p {
+  color: #0066cc;
+  font-size: 0.98rem;
+  font-weight: 650;
+  margin: 0;
+  text-align: left;
+}
+
+#closeAlertContact,
+#closeAlertJoin {
+  background: transparent;
+  border: 1px solid #c9dcff;
+  border-radius: 8px;
+  color: #0066cc;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 7px 10px;
+}
+
+@media (max-width: 860px) {
+  .home-contact-panel {
+    grid-template-columns: 1fr;
+    padding: 26px;
+  }
+
+  .home-contact-intro p {
+    max-width: none;
+  }
+}
+
+@media (max-width: 620px) {
+  #contact-form {
+    padding: 0 12px 42px;
+  }
+
+  .home-contact-panel {
+    padding: 20px;
+  }
+
+  .home-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #home-contact-form-btn {
+    width: 100%;
+  }
+
+  #customAlertContact,
+  #customAlertJoin {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
