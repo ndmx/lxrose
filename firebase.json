@@ -1,0 +1,131 @@
+{
+  "firestore": {
+    "rules": "lxroseinc/firestore.rules",
+    "indexes": "lxroseinc/firestore.indexes.json"
+  },
+  "functions": {
+    "source": "backend"
+  },
+  "hosting": [
+    {
+      "target": "lxroseinc",
+      "public": "lxroseinc/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/api/**",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/login",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/register",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/verifyToken",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/getUser/**",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/sendMessage",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "target": "lxroseorg",
+      "public": "lxroseinc/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/api/**",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/login",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/register",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/verifyToken",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/getUser/**",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/sendMessage",
+          "function": {
+            "functionId": "api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ],
+  "storage": {
+    "rules": "lxroseinc/storage.rules"
+  },
+  "database": {
+    "rules": "lxroseinc/database.rules.json"
+  }
+}

@@ -1,10 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import {
+  changeOwnPassword,
+  createAdminUser,
   formatAdminTimestamp,
   getAllUsers,
+  getConversationMessages,
+  getConversations,
   getCurrentUser,
+  getDashboardAnalytics,
   getUnifiedSubmissions,
+  markConversationRead,
+  sendConversationMessage,
+  resetUserPassword,
   updateSubmission
 } from "../utils/api";
 
@@ -21,6 +29,30 @@ const defaultStats = {
   newContacts: 0,
   bookingsToday: 0,
   openFollowUps: 0
+};
+
+const defaultAnalytics = {
+  contactForms: { total: 0, today: 0, thisWeek: 0, unread: 0 },
+  joinForms: { total: 0, today: 0, thisWeek: 0 },
+  timestamp: null
+};
+
+const emptyNewUser = {
+  username: "",
+  email: "",
+  password: "",
+  role: "admin"
+};
+
+const emptyPasswordForm = {
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: ""
+};
+
+const emptyResetForm = {
+  userId: "",
+  newPassword: ""
 };
 
 const formatSubmissionDate = (timestamp) => {
@@ -44,31 +76,52 @@ const Home = ({ userId }) => {
   const [typeOptions, setTypeOptions] = useState([]);
   const [statusOptions, setStatusOptions] = useState(Object.keys(statusLabels));
   const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [siteAnalytics, setSiteAnalytics] = useState(defaultAnalytics);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [draftStatus, setDraftStatus] = useState("new");
   const [draftAssignedTo, setDraftAssignedTo] = useState("");
   const [draftNotes, setDraftNotes] = useState("");
+  const [replyDraft, setReplyDraft] = useState("");
+  const [newUser, setNewUser] = useState(emptyNewUser);
+  const [userMessage, setUserMessage] = useState("");
+  const [passwordForm, setPasswordForm] = useState(emptyPasswordForm);
+  const [resetForm, setResetForm] = useState(emptyResetForm);
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [activePanel, setActivePanel] = useState("submissions");
+  const [conversations, setConversations] = useState([]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [conversationMessages, setConversationMessages] = useState([]);
+  const [messageDraft, setMessageDraft] = useState("");
+  const [isMessagesLoading, setIsMessagesLoading] = useState(false);
+  const [isThreadLoading, setIsThreadLoading] = useState(false);
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const [messageError, setMessageError] = useState("");
 
   const loadDashboard = async () => {
     setIsLoading(true);
     setError("");
 
     try {
-      const [currentUser, users, inbox] = await Promise.all([
+      const [currentUser, users, inbox, analytics] = await Promise.all([
         userId ? getCurrentUser(userId) : Promise.resolve(null),
         getAllUsers(),
-        getUnifiedSubmissions()
+        getUnifiedSubmissions(),
+        getDashboardAnalytics()
       ]);
 
       setUser(currentUser);
       setAllUsers(users);
       setSubmissions(inbox.submissions || []);
       setStats(inbox.stats || defaultStats);
+      setSiteAnalytics(analytics || defaultAnalytics);
       setTypeOptions(inbox.typeOptions || []);
       setStatusOptions(inbox.statusOptions || Object.keys(statusLabels));
 
@@ -86,6 +139,71 @@ const Home = ({ userId }) => {
     loadDashboard();
   }, [userId]);
 
+  const getUserLabel = (lookupUserId) => {
+    const matchedUser = allUsers.find((adminUser) => adminUser.id === lookupUserId);
+    return matchedUser?.email || matchedUser?.username || lookupUserId || "Unknown user";
+  };
+
+  const loadConversations = async () => {
+    if (!userId) {
+      return;
+    }
+
+    setIsMessagesLoading(true);
+    setMessageError("");
+
+    try {
+      const data = await getConversations(userId);
+      setConversations(data);
+
+      if (!selectedConversation && data.length) {
+        setSelectedConversation(data[0]);
+      }
+    } catch (loadError) {
+      setMessageError(loadError.message || "Unable to load messages.");
+    } finally {
+      setIsMessagesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activePanel === "messages") {
+      loadConversations();
+    }
+  }, [activePanel, userId]);
+
+  const loadThread = async (conversation) => {
+    if (!userId || !conversation?.userId) {
+      setConversationMessages([]);
+      return;
+    }
+
+    setIsThreadLoading(true);
+    setMessageError("");
+
+    try {
+      const messages = await getConversationMessages(userId, conversation.userId);
+      setConversationMessages(messages);
+
+      if (conversation.unread) {
+        await markConversationRead(userId, conversation.userId);
+        setConversations((current) => current.map((item) => (
+          item.userId === conversation.userId ? { ...item, unread: false } : item
+        )));
+      }
+    } catch (loadError) {
+      setMessageError(loadError.message || "Unable to load this conversation.");
+    } finally {
+      setIsThreadLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activePanel === "messages" && selectedConversation) {
+      loadThread(selectedConversation);
+    }
+  }, [activePanel, selectedConversation?.userId, userId]);
+
   useEffect(() => {
     if (!selectedSubmission) {
       setDraftStatus("new");
@@ -97,6 +215,7 @@ const Home = ({ userId }) => {
     setDraftStatus(selectedSubmission.status || "new");
     setDraftAssignedTo(selectedSubmission.assignedTo || "");
     setDraftNotes(selectedSubmission.internalNotes || "");
+    setReplyDraft(`Hello ${selectedSubmission.name || "there"},\n\nThank you for reaching out to LxRose. `);
   }, [selectedSubmission]);
 
   const filteredSubmissions = useMemo(() => {
@@ -127,10 +246,20 @@ const Home = ({ userId }) => {
     { label: "New Contacts", value: stats.newContacts || 0 },
     { label: "Bookings Today", value: stats.bookingsToday || 0 },
     { label: "Open Follow-ups", value: stats.openFollowUps || 0 },
-    { label: "Total Submissions", value: stats.total || submissions.length }
+    { label: "Total Submissions", value: stats.total || submissions.length },
+    { label: "Admin Users", value: allUsers.length }
   ];
 
   const selectedUserLabel = user?.email || user?.username || "admin@lxrose.org";
+  const unreadConversationCount = conversations.filter((conversation) => conversation.unread).length;
+  const typeBreakdown = typeOptions.map((option) => ({
+    ...option,
+    count: stats.byType?.[option.value] || 0
+  }));
+  const statusBreakdown = statusOptions.map((status) => ({
+    label: statusLabels[status] || status,
+    count: stats.byStatus?.[status] || 0
+  }));
 
   const handleSelectSubmission = (submission) => {
     setSelectedSubmission(submission);
@@ -162,6 +291,123 @@ const Home = ({ userId }) => {
     }
   };
 
+  const handleSendMessage = async (event) => {
+    event.preventDefault();
+
+    if (!userId || !selectedConversation?.userId || !messageDraft.trim()) {
+      return;
+    }
+
+    setIsSendingMessage(true);
+    setMessageError("");
+
+    try {
+      await sendConversationMessage(userId, selectedConversation.userId, messageDraft.trim());
+      setMessageDraft("");
+      await loadThread(selectedConversation);
+      await loadConversations();
+    } catch (sendError) {
+      setMessageError(sendError.message || "Unable to send message.");
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
+
+  const handleNewUserChange = (event) => {
+    const { name, value } = event.target;
+    setNewUser((current) => ({ ...current, [name]: value }));
+  };
+
+  const handlePasswordFormChange = (event) => {
+    const { name, value } = event.target;
+    setPasswordForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleResetFormChange = (event) => {
+    const { name, value } = event.target;
+    setResetForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleCreateUser = async (event) => {
+    event.preventDefault();
+    setIsCreatingUser(true);
+    setUserMessage("");
+
+    try {
+      const created = await createAdminUser(newUser);
+      setAllUsers((current) => [...current, created.user]);
+      setNewUser(emptyNewUser);
+      setUserMessage("Admin user created. Share the temporary password privately and have them change it soon.");
+    } catch (createError) {
+      setUserMessage(createError.message || "Unable to create admin user.");
+    } finally {
+      setIsCreatingUser(false);
+    }
+  };
+
+  const handleChangePassword = async (event) => {
+    event.preventDefault();
+    setPasswordMessage("");
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordMessage("New passwords do not match.");
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      await changeOwnPassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword
+      });
+      setPasswordForm(emptyPasswordForm);
+      setPasswordMessage("Your password was changed successfully.");
+      setUser((current) => current ? { ...current, mustChangePassword: false } : current);
+    } catch (changeError) {
+      setPasswordMessage(changeError.message || "Unable to change password.");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleResetUserPassword = async (event) => {
+    event.preventDefault();
+    setPasswordMessage("");
+
+    if (!resetForm.userId || !resetForm.newPassword) {
+      setPasswordMessage("Choose a user and enter a temporary password.");
+      return;
+    }
+
+    setIsResettingPassword(true);
+
+    try {
+      const result = await resetUserPassword(resetForm.userId, resetForm.newPassword);
+      setAllUsers((current) => current.map((adminUser) => (
+        adminUser.id === result.user.id ? result.user : adminUser
+      )));
+      setResetForm(emptyResetForm);
+      setPasswordMessage("Temporary password set. Ask the user to sign in and change it.");
+    } catch (resetError) {
+      setPasswordMessage(resetError.message || "Unable to reset password.");
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
+  const handleOpenReply = () => {
+    if (!selectedSubmission?.email) {
+      return;
+    }
+
+    const subject = `Re: ${selectedSubmission.subject || selectedSubmission.typeLabel || "LxRose inquiry"}`;
+    const body = `${replyDraft.trim()}\n\n--\nLxRose Admin`;
+    const mailtoUrl = `mailto:${encodeURIComponent(selectedSubmission.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+    setDraftStatus("contacted");
+  };
+
   return (
     <div id="homePage">
       <div className="admin-header">
@@ -184,6 +430,39 @@ const Home = ({ userId }) => {
         ))}
       </section>
 
+      <div className="admin-panel-tabs" role="tablist" aria-label="Admin workspace">
+        <button
+          type="button"
+          className={activePanel === "submissions" ? "active" : ""}
+          onClick={() => setActivePanel("submissions")}
+        >
+          Submissions
+        </button>
+        <button
+          type="button"
+          className={activePanel === "messages" ? "active" : ""}
+          onClick={() => setActivePanel("messages")}
+        >
+          Messages
+          {unreadConversationCount > 0 && <span>{unreadConversationCount}</span>}
+        </button>
+        <button
+          type="button"
+          className={activePanel === "stats" ? "active" : ""}
+          onClick={() => setActivePanel("stats")}
+        >
+          Stats
+        </button>
+        <button
+          type="button"
+          className={activePanel === "users" ? "active" : ""}
+          onClick={() => setActivePanel("users")}
+        >
+          Users
+        </button>
+      </div>
+
+      {activePanel === "submissions" && (
       <div className="admin-workspace">
         <aside className="admin-sidebar">
           <div className="user-card">
@@ -323,6 +602,27 @@ const Home = ({ userId }) => {
                 <p>{selectedSubmission.message || selectedSubmission.subject || "No message provided."}</p>
               </div>
 
+              <div className="reply-helper">
+                <div>
+                  <span>Reply</span>
+                  <p>
+                    Draft a response, open it in your email app, then save the submission as contacted.
+                  </p>
+                </div>
+                <textarea
+                  value={replyDraft}
+                  onChange={(event) => setReplyDraft(event.target.value)}
+                  placeholder="Write a reply for this inquiry."
+                />
+                <button
+                  type="button"
+                  onClick={handleOpenReply}
+                  disabled={!selectedSubmission.email || !replyDraft.trim()}
+                >
+                  Open Email Reply
+                </button>
+              </div>
+
               <div className="detail-controls">
                 <label htmlFor="submission-status">
                   Status
@@ -365,6 +665,347 @@ const Home = ({ userId }) => {
           )}
         </aside>
       </div>
+      )}
+
+      {activePanel === "messages" && (
+      <div className="messages-workspace">
+        <aside className="conversations-panel">
+          <div className="messages-toolbar">
+            <div>
+              <h2>Messages</h2>
+              <p>{conversations.length} conversation{conversations.length === 1 ? "" : "s"}</p>
+            </div>
+            <button type="button" onClick={loadConversations} disabled={isMessagesLoading}>
+              {isMessagesLoading ? "Loading..." : "Refresh"}
+            </button>
+          </div>
+
+          {messageError && <div className="admin-alert" role="alert">{messageError}</div>}
+
+          {isMessagesLoading ? (
+            <div className="admin-empty-state">Loading conversations...</div>
+          ) : conversations.length ? (
+            <div className="conversation-list">
+              {conversations.map((conversation) => (
+                <button
+                  type="button"
+                  key={conversation.userId}
+                  className={`conversation-row ${selectedConversation?.userId === conversation.userId ? "active" : ""} ${conversation.unread ? "unread" : ""}`}
+                  onClick={() => setSelectedConversation(conversation)}
+                >
+                  <div className="conversation-avatar">{getInitials(getUserLabel(conversation.userId))}</div>
+                  <div className="conversation-summary">
+                    <strong>{getUserLabel(conversation.userId)}</strong>
+                    <span>{conversation.lastMessage || "No message text"}</span>
+                  </div>
+                  {conversation.unread && <span className="unread-dot" aria-label="Unread messages"></span>}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="admin-empty-state">No messages yet.</div>
+          )}
+        </aside>
+
+        <section className="message-thread-panel" aria-label="Message thread">
+          {selectedConversation ? (
+            <>
+              <div className="thread-header">
+                <div>
+                  <span>Conversation</span>
+                  <h2>{getUserLabel(selectedConversation.userId)}</h2>
+                </div>
+              </div>
+
+              <div className="message-thread">
+                {isThreadLoading ? (
+                  <div className="admin-empty-state">Loading thread...</div>
+                ) : conversationMessages.length ? (
+                  conversationMessages.map((message) => (
+                    <div
+                      className={`message-bubble ${message.fromUserId === userId ? "outgoing" : "incoming"}`}
+                      key={message.id}
+                    >
+                      <p>{message.message}</p>
+                      <span>{formatSubmissionDate(message.timestamp)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="admin-empty-state">No messages in this conversation.</div>
+                )}
+              </div>
+
+              <form className="message-compose" onSubmit={handleSendMessage}>
+                <label htmlFor="message-draft">Message</label>
+                <textarea
+                  id="message-draft"
+                  value={messageDraft}
+                  onChange={(event) => setMessageDraft(event.target.value)}
+                  placeholder="Type your reply..."
+                />
+                <button type="submit" disabled={isSendingMessage || !messageDraft.trim()}>
+                  {isSendingMessage ? "Sending..." : "Send Message"}
+                </button>
+              </form>
+            </>
+          ) : (
+            <div className="admin-empty-state">Select a conversation to read messages.</div>
+          )}
+        </section>
+      </div>
+      )}
+
+      {activePanel === "stats" && (
+        <div className="admin-secondary-panel">
+          <div className="admin-section-heading">
+            <div>
+              <p className="admin-kicker">Site Activity</p>
+              <h2>Stats</h2>
+            </div>
+            <button className="admin-refresh-button" type="button" onClick={loadDashboard} disabled={isLoading}>
+              {isLoading ? "Refreshing..." : "Refresh Stats"}
+            </button>
+          </div>
+
+          <section className="admin-stats-grid">
+            <div className="admin-stat-card">
+              <span>Contacts Today</span>
+              <strong>{siteAnalytics.contactForms?.today || 0}</strong>
+              <p>{siteAnalytics.contactForms?.thisWeek || 0} this week</p>
+            </div>
+            <div className="admin-stat-card">
+              <span>Total Contacts</span>
+              <strong>{siteAnalytics.contactForms?.total || 0}</strong>
+              <p>{siteAnalytics.contactForms?.unread || stats.newContacts || 0} waiting for review</p>
+            </div>
+            <div className="admin-stat-card">
+              <span>Community Signups</span>
+              <strong>{siteAnalytics.joinForms?.total || 0}</strong>
+              <p>{siteAnalytics.joinForms?.thisWeek || 0} this week</p>
+            </div>
+            <div className="admin-stat-card">
+              <span>Messages</span>
+              <strong>{conversations.length}</strong>
+              <p>{unreadConversationCount} unread conversations</p>
+            </div>
+          </section>
+
+          <div className="stats-breakdown-grid">
+            <section className="breakdown-panel">
+              <h3>Submissions by Type</h3>
+              {typeBreakdown.map((item) => (
+                <div className="breakdown-row" key={item.value}>
+                  <span>{item.label}</span>
+                  <strong>{item.count}</strong>
+                </div>
+              ))}
+            </section>
+
+            <section className="breakdown-panel">
+              <h3>Submissions by Status</h3>
+              {statusBreakdown.map((item) => (
+                <div className="breakdown-row" key={item.label}>
+                  <span>{item.label}</span>
+                  <strong>{item.count}</strong>
+                </div>
+              ))}
+            </section>
+          </div>
+        </div>
+      )}
+
+      {activePanel === "users" && (
+        <div className="admin-secondary-panel">
+          <div className="admin-section-heading">
+            <div>
+              <p className="admin-kicker">Staff Access</p>
+              <h2>Admin Users</h2>
+            </div>
+            <span>{allUsers.length} users</span>
+          </div>
+
+          <div className="users-workspace">
+            <section className="users-list-panel">
+              {allUsers.map((adminUser) => (
+                <article className="admin-user-row" key={adminUser.id}>
+                  <div className="conversation-avatar">{getInitials(adminUser.username || adminUser.email)}</div>
+                  <div>
+                    <strong>{adminUser.username || adminUser.id}</strong>
+                    <span>{adminUser.email || "No email saved"}</span>
+                  </div>
+                  <p>{adminUser.mustChangePassword ? "password reset" : (adminUser.role || "admin")}</p>
+                </article>
+              ))}
+            </section>
+
+            <section className="create-user-panel">
+              <div>
+                <p className="admin-kicker">Account Security</p>
+                <h3>Change My Password</h3>
+              </div>
+
+              {user?.mustChangePassword && (
+                <div className="admin-alert" role="alert">
+                  Your password was reset. Change it before continuing normal admin work.
+                </div>
+              )}
+
+              {passwordMessage && <div className="admin-alert" role="status">{passwordMessage}</div>}
+
+              <form className="stacked-admin-form" onSubmit={handleChangePassword}>
+                <label htmlFor="current-password">
+                  Current Password
+                  <input
+                    id="current-password"
+                    name="currentPassword"
+                    type="password"
+                    value={passwordForm.currentPassword}
+                    onChange={handlePasswordFormChange}
+                    required
+                  />
+                </label>
+
+                <label htmlFor="new-password">
+                  New Password
+                  <input
+                    id="new-password"
+                    name="newPassword"
+                    type="password"
+                    value={passwordForm.newPassword}
+                    onChange={handlePasswordFormChange}
+                    minLength="8"
+                    required
+                  />
+                </label>
+
+                <label htmlFor="confirm-password">
+                  Confirm New Password
+                  <input
+                    id="confirm-password"
+                    name="confirmPassword"
+                    type="password"
+                    value={passwordForm.confirmPassword}
+                    onChange={handlePasswordFormChange}
+                    minLength="8"
+                    required
+                  />
+                </label>
+
+                <button type="submit" disabled={isChangingPassword}>
+                  {isChangingPassword ? "Changing..." : "Change Password"}
+                </button>
+              </form>
+            </section>
+
+            <form className="create-user-panel" onSubmit={handleCreateUser}>
+              <div>
+                <p className="admin-kicker">New Access</p>
+                <h3>Add Admin User</h3>
+              </div>
+
+              {userMessage && <div className="admin-alert" role="status">{userMessage}</div>}
+
+              <label htmlFor="new-user-username">
+                Username
+                <input
+                  id="new-user-username"
+                  name="username"
+                  value={newUser.username}
+                  onChange={handleNewUserChange}
+                  placeholder="Full name or short username"
+                  required
+                />
+              </label>
+
+              <label htmlFor="new-user-email">
+                Email
+                <input
+                  id="new-user-email"
+                  name="email"
+                  type="email"
+                  value={newUser.email}
+                  onChange={handleNewUserChange}
+                  placeholder="admin@lxrose.org"
+                  required
+                />
+              </label>
+
+              <label htmlFor="new-user-password">
+                Temporary Password
+                <input
+                  id="new-user-password"
+                  name="password"
+                  type="password"
+                  value={newUser.password}
+                  onChange={handleNewUserChange}
+                  placeholder="Create a strong temporary password"
+                  required
+                />
+              </label>
+
+              <label htmlFor="new-user-role">
+                Role
+                <select id="new-user-role" name="role" value={newUser.role} onChange={handleNewUserChange}>
+                  <option value="admin">Admin</option>
+                  <option value="staff">Staff</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+              </label>
+
+              <button type="submit" disabled={isCreatingUser}>
+                {isCreatingUser ? "Creating..." : "Create User"}
+              </button>
+            </form>
+
+            <form className="create-user-panel" onSubmit={handleResetUserPassword}>
+              <div>
+                <p className="admin-kicker">Password Reset</p>
+                <h3>Reset User Password</h3>
+              </div>
+
+              <p className="panel-helper-text">
+                Set a temporary password. The user will be marked for password change after reset.
+              </p>
+
+              <label htmlFor="reset-user-id">
+                User
+                <select
+                  id="reset-user-id"
+                  name="userId"
+                  value={resetForm.userId}
+                  onChange={handleResetFormChange}
+                  required
+                >
+                  <option value="">Choose user</option>
+                  {allUsers.map((adminUser) => (
+                    <option key={adminUser.id} value={adminUser.id}>
+                      {adminUser.username || adminUser.email || adminUser.id}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label htmlFor="reset-password">
+                Temporary Password
+                <input
+                  id="reset-password"
+                  name="newPassword"
+                  type="password"
+                  value={resetForm.newPassword}
+                  onChange={handleResetFormChange}
+                  placeholder="Create a temporary password"
+                  minLength="8"
+                  required
+                />
+              </label>
+
+              <button type="submit" disabled={isResettingPassword}>
+                {isResettingPassword ? "Resetting..." : "Reset Password"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

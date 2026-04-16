@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+const getDefaultApiBaseUrl = () => {
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    return "http://localhost:5001";
+  }
+
+  return "";
+};
+
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = configuredApiBaseUrl !== undefined ? configuredApiBaseUrl : getDefaultApiBaseUrl();
 
 const Login = (props) => {
   const [username, setUsername] = useState("");

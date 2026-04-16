@@ -15,6 +15,7 @@ out/
 .env.development.local
 .env.test.local
 .env.production.local
+.secret.local
 
 # Logs
 npm-debug.log*
@@ -50,7 +51,9 @@ coverage/
 .cache/
 .parcel-cache/
 .eslintcache
-.firebase/
+**/.firebase/
+*-firebase-adminsdk-*.json
+*-adminsdk-*.json
 backend/lxroseinc-firebase-adminsdk-*.json
 lxroseinc-firebase-adminsdk-*.json
 
@@ -62,4 +65,3 @@ lxroseinc-firebase-adminsdk-*.json
 # Git related
 .git/
 .gitattributes
-

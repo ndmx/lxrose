@@ -1,5 +1,10 @@
-// Load environment variables
+const path = require('path');
+// Load shared local env. Standalone local runs also load .env.local and .secret.local.
 require('dotenv').config();
+if (require.main === module) {
+  require('dotenv').config({ path: path.resolve(__dirname, '.env.local'), override: true });
+  require('dotenv').config({ path: path.resolve(__dirname, '.secret.local'), override: true });
+}
 
 const express = require('express');
 const cors = require('cors');
@@ -10,12 +15,14 @@ const crypto = require('crypto');
 const admin = require("firebase-admin");
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
+const { ipKeyGenerator } = rateLimit;
 
 // Configuration from environment variables
-const port = process.env.PORT || 5001;
-const jwtSecret = process.env.JWT_SECRET || 'your_jwt_secret';
-const firebaseAdminSDKPath = process.env.FIREBASE_ADMIN_SDK_PATH || './lxroseinc-firebase-adminsdk-5g2cj-df13bfcd94.json';
-const databaseURL = process.env.FIREBASE_DATABASE_URL || 'https://lxroseinc-default-rtdb.firebaseio.com';
+const port = process.env.LXROSE_PORT || process.env.PORT || 5001;
+const firebaseAdminSDKPath = process.env.LXROSE_ADMIN_SDK_PATH || process.env.FIREBASE_ADMIN_SDK_PATH;
+const databaseURL = process.env.LXROSE_DATABASE_URL
+  || process.env.FIREBASE_DATABASE_URL
+  || 'https://lxroseinc-default-rtdb.firebaseio.com';
 const defaultAllowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
@@ -30,20 +37,30 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || defaultAllowedOrigins.joi
   .split(',')
   .map(origin => origin.trim())
   .filter(Boolean);
-const adminApiKey = process.env.ADMIN_API_KEY;
+const getJwtSecret = () => process.env.JWT_SECRET;
+const getAdminApiKey = () => process.env.ADMIN_API_KEY;
 
-if (!adminApiKey) {
-  console.error('ADMIN_API_KEY is required. Set it in the environment to start the server securely.');
+if ((!getAdminApiKey() || !getJwtSecret()) && require.main === module) {
+  console.error('ADMIN_API_KEY and JWT_SECRET are required. Set them in the environment to start the server securely.');
   process.exit(1);
 }
 
 // Firebase Admin Initialization
-const serviceAccount = require(firebaseAdminSDKPath);
+if (!admin.apps.length) {
+  if (firebaseAdminSDKPath) {
+    const resolvedServiceAccountPath = path.isAbsolute(firebaseAdminSDKPath)
+      ? firebaseAdminSDKPath
+      : path.resolve(__dirname, firebaseAdminSDKPath);
+    const serviceAccount = require(resolvedServiceAccountPath);
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: databaseURL
-});
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL
+    });
+  } else {
+    admin.initializeApp({ databaseURL });
+  }
+}
 
 const db = admin.firestore();
 
@@ -55,6 +72,11 @@ const base64UrlEncode = (value) => Buffer
   .toString('base64url');
 
 const signAdminToken = (payload) => {
+  const jwtSecret = getJwtSecret();
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET is not configured');
+  }
+
   const header = { alg: 'HS256', typ: 'JWT' };
   const now = Math.floor(Date.now() / 1000);
   const body = {
@@ -72,6 +94,11 @@ const signAdminToken = (payload) => {
 };
 
 const verifyAdminToken = (token) => {
+  const jwtSecret = getJwtSecret();
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET is not configured');
+  }
+
   const [encodedHeader, encodedPayload, signature] = token.split('.');
 
   if (!encodedHeader || !encodedPayload || !signature) {
@@ -121,6 +148,22 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
 };
 
+const rateLimitKeyGenerator = (req) => {
+  if (req.ip) {
+    return ipKeyGenerator(req.ip);
+  }
+
+  const forwardedFor = req.headers['x-forwarded-for'];
+  if (forwardedFor) {
+    return ipKeyGenerator(String(forwardedFor).split(',')[0].trim());
+  }
+
+  return req.headers['x-appengine-user-ip']
+    || req.headers['fastly-client-ip']
+    || req.socket?.remoteAddress
+    || 'unknown-client';
+};
+
 app.use(cors(corsOptions)); // Restrictive when ALLOWED_ORIGINS is set
 app.options('*', cors(corsOptions));
 
@@ -131,6 +174,7 @@ app.use(helmet({
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 300,
+  keyGenerator: rateLimitKeyGenerator,
   standardHeaders: true,
   legacyHeaders: false
 });
@@ -138,6 +182,7 @@ const generalLimiter = rateLimit({
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
+  keyGenerator: rateLimitKeyGenerator,
   standardHeaders: true,
   legacyHeaders: false
 });
@@ -159,6 +204,11 @@ const requireAdminAuth = (req, res, next) => {
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized: invalid token' });
     }
+  }
+
+  const adminApiKey = getAdminApiKey();
+  if (!adminApiKey) {
+    return res.status(500).json({ error: 'Server configuration error: missing admin API key' });
   }
 
   const providedKey = req.headers['x-api-key'] || req.query.apiKey;
@@ -188,6 +238,41 @@ const formatTimestamp = (timestamp) => {
 };
 
 const isBcryptHash = (password) => /^\$2[aby]\$\d{2}\$/.test(password || '');
+
+const isPasswordValid = async (plainPassword, storedPassword) => {
+  if (isBcryptHash(storedPassword)) {
+    return bcrypt.compare(plainPassword, storedPassword);
+  }
+
+  return plainPassword === storedPassword;
+};
+
+const assertAdminCanManageUsers = async (req, res) => {
+  if (!req.userId) {
+    return true;
+  }
+
+  const adminDoc = await db.collection('users').doc(req.userId).get();
+  const role = adminDoc.data()?.role;
+
+  // Existing users were created before roles existed, so missing role keeps admin access.
+  if (!role || role === 'admin') {
+    return true;
+  }
+
+  res.status(403).send({ message: 'Only admin users can manage user access' });
+  return false;
+};
+
+const getSafeUser = (doc) => {
+  const { password, ...safeUser } = doc.data();
+  return {
+    id: doc.id,
+    role: safeUser.role || 'admin',
+    mustChangePassword: Boolean(safeUser.mustChangePassword),
+    ...safeUser
+  };
+};
 
 const submissionTypes = {
   contact: {
@@ -348,15 +433,133 @@ const normalizeSubmission = (type, doc) => {
   };
 };
 
+const normalizeMessage = (doc) => {
+  const data = doc.data();
+  const timestamp = parseTimestamp(data.timestamp);
+
+  return {
+    id: doc.id,
+    ...data,
+    timestamp: timestamp ? timestamp.toISOString() : null
+  };
+};
+
+const addUserIdentity = (identityMap, value, userId) => {
+  if (value) {
+    identityMap.set(String(value).toLowerCase(), userId);
+  }
+};
+
+const getLegacyMailboxMessages = async () => {
+  const usersSnapshot = await db.collection('users').get();
+  const userDocs = usersSnapshot.docs.map((doc) => ({ id: doc.id, data: doc.data() }));
+  const userIdentityMap = new Map();
+
+  userDocs.forEach(({ id, data }) => {
+    addUserIdentity(userIdentityMap, id, id);
+    addUserIdentity(userIdentityMap, data.username, id);
+    addUserIdentity(userIdentityMap, data.email, id);
+  });
+
+  return userDocs.flatMap(({ id: recipientId, data }) => {
+    const mailbox = Array.isArray(data.mailbox) ? data.mailbox : [];
+
+    return mailbox.map((message, index) => {
+      const timestamp = parseTimestamp(message.timestamp);
+      const senderId = userIdentityMap.get(String(message.fromEmail || '').toLowerCase())
+        || userIdentityMap.get(String(message.fromName || '').toLowerCase())
+        || message.fromName
+        || message.fromEmail
+        || 'Unknown sender';
+
+      return {
+        id: `legacy-${recipientId}-${index}-${timestamp ? timestamp.getTime() : 'unknown'}`,
+        fromUserId: senderId,
+        toUserId: recipientId,
+        fromName: message.fromName || '',
+        fromEmail: message.fromEmail || '',
+        message: message.message || '',
+        timestamp: timestamp ? timestamp.toISOString() : null,
+        read: message.read !== false,
+        legacy: true
+      };
+    });
+  });
+};
+
+const getStoredMessagesForUser = async (userId) => {
+  const [sentSnapshot, receivedSnapshot] = await Promise.all([
+    db.collection('messages').where('fromUserId', '==', userId).get(),
+    db.collection('messages').where('toUserId', '==', userId).get()
+  ]);
+
+  const storedMessages = [...sentSnapshot.docs, ...receivedSnapshot.docs].map((doc) => normalizeMessage(doc));
+  const legacyMessages = await getLegacyMailboxMessages();
+
+  return [
+    ...storedMessages,
+    ...legacyMessages.filter((message) => message.fromUserId === userId || message.toUserId === userId)
+  ];
+};
+
 // POST /register
 app.post('/register', requireAdminAuth, async (req, res) => {
-  const { username, email, password } = req.body;
+  const username = String(req.body.username || '').trim();
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const password = String(req.body.password || '');
+  const role = String(req.body.role || 'admin').trim() || 'admin';
+
+  if (!username || !email || !password) {
+    return res.status(400).send({ message: 'Username, email, and password are required' });
+  }
+
   try {
+    const canManageUsers = await assertAdminCanManageUsers(req, res);
+    if (!canManageUsers) {
+      return;
+    }
+
+    const usersRef = admin.firestore().collection('users');
+    const [usernameSnapshot, emailSnapshot] = await Promise.all([
+      usersRef.where('username', '==', username).get(),
+      usersRef.where('email', '==', email).get()
+    ]);
+
+    if (!usernameSnapshot.empty || !emailSnapshot.empty) {
+      return res.status(409).send({ message: 'A user with that username or email already exists' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUserRef = admin.firestore().collection('users').doc();
-    await newUserRef.set({ username, email, password: hashedPassword });
-    res.status(201).send({ message: 'User registered successfully' });
+    const documentId = username.replace(/\//g, '-');
+    const newUserRef = usersRef.doc(documentId);
+    const existingDoc = await newUserRef.get();
+
+    if (existingDoc.exists) {
+      return res.status(409).send({ message: 'A user with that username already exists' });
+    }
+
+    await newUserRef.set({
+      username,
+      email,
+      password: hashedPassword,
+      role,
+      mustChangePassword: true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: req.userId || 'api-key'
+    });
+
+    res.status(201).send({
+      message: 'User registered successfully',
+      user: {
+        id: newUserRef.id,
+        username,
+        email,
+        role,
+        mustChangePassword: true
+      }
+    });
   } catch (error) {
+    console.error('Error registering user:', error);
     res.status(500).send({ message: 'Error registering user' });
   }
 });
@@ -381,17 +584,11 @@ app.post('/login', async (req, res) => {
     const userDoc = querySnapshot.docs[0];
     const user = userDoc.data();
 
-    let passwordIsValid = false;
+    const passwordIsValid = await isPasswordValid(password, user.password);
 
-    if (isBcryptHash(user.password)) {
-      passwordIsValid = await bcrypt.compare(password, user.password);
-    } else {
-      passwordIsValid = password === user.password;
-
-      if (passwordIsValid) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await userDoc.ref.update({ password: hashedPassword });
-      }
+    if (!isBcryptHash(user.password) && passwordIsValid) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await userDoc.ref.update({ password: hashedPassword });
     }
 
     if (!passwordIsValid) {
@@ -400,7 +597,7 @@ app.post('/login', async (req, res) => {
 
     // Generate a JWT token
     const token = signAdminToken({ userId: userDoc.id });
-    res.json({ token, userId: userDoc.id });
+    res.json({ token, userId: userDoc.id, mustChangePassword: Boolean(user.mustChangePassword) });
   } catch (error) {
     res.status(500).send({ message: 'Login error' });
   }
@@ -428,11 +625,101 @@ app.get('/getUser/:userId', requireAdminAuth, async (req, res) => {
     if (!userSnap.exists) {
       res.status(404).send('User not found');
     } else {
-      const { password, ...safeUser } = userSnap.data();
-      res.json(safeUser);
+      res.json(getSafeUser(userSnap));
     }
   } catch (error) {
     res.status(500).send('Error fetching user');
+  }
+});
+
+app.post('/api/users/me/password', requireAdminAuth, async (req, res) => {
+  if (!req.userId) {
+    return res.status(401).send({ message: 'Password changes require a signed-in user session' });
+  }
+
+  const currentPassword = String(req.body.currentPassword || '');
+  const newPassword = String(req.body.newPassword || '');
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).send({ message: 'Current password and new password are required' });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).send({ message: 'New password must be at least 8 characters' });
+  }
+
+  try {
+    const userRef = db.collection('users').doc(req.userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+
+    const user = userDoc.data();
+    const passwordIsValid = await isPasswordValid(currentPassword, user.password);
+
+    if (!passwordIsValid) {
+      return res.status(401).send({ message: 'Current password is incorrect' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await userRef.update({
+      password: hashedPassword,
+      mustChangePassword: false,
+      passwordUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      passwordUpdatedBy: req.userId
+    });
+
+    res.json({ success: true, message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).send({ message: 'Error changing password' });
+  }
+});
+
+app.patch('/api/users/:userId/password', requireAdminAuth, async (req, res) => {
+  const targetUserId = req.params.userId;
+  const newPassword = String(req.body.newPassword || '');
+
+  if (!newPassword) {
+    return res.status(400).send({ message: 'New password is required' });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).send({ message: 'New password must be at least 8 characters' });
+  }
+
+  try {
+    const canManageUsers = await assertAdminCanManageUsers(req, res);
+    if (!canManageUsers) {
+      return;
+    }
+
+    const userRef = db.collection('users').doc(targetUserId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await userRef.update({
+      password: hashedPassword,
+      mustChangePassword: true,
+      passwordResetAt: admin.firestore.FieldValue.serverTimestamp(),
+      passwordResetBy: req.userId || 'api-key'
+    });
+
+    const updatedDoc = await userRef.get();
+    res.json({
+      success: true,
+      message: 'Password reset successfully',
+      user: getSafeUser(updatedDoc)
+    });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).send({ message: 'Error resetting password' });
   }
 });
 
@@ -1068,12 +1355,7 @@ app.get('/api/forms/nutrition-bookings/export', requireAdminAuth, async (req, re
 app.get('/api/users/all', requireAdminAuth, async (req, res) => {
   try {
     const snapshot = await db.collection('users').get();
-    const users = snapshot.docs.map(doc => ({
-      id: doc.id,
-      username: doc.data().username,
-      email: doc.data().email,
-      role: doc.data().role || 'user'
-    }));
+    const users = snapshot.docs.map(doc => getSafeUser(doc));
     res.json(users);
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -1085,44 +1367,40 @@ app.get('/api/users/all', requireAdminAuth, async (req, res) => {
 app.get('/api/messages/conversations/:userId', requireAdminAuth, async (req, res) => {
   try {
     const { userId } = req.params;
-    
-    // Get messages where user is sender or receiver
-    const sentSnapshot = await db.collection('messages')
-      .where('fromUserId', '==', userId)
-      .get();
-    
-    const receivedSnapshot = await db.collection('messages')
-      .where('toUserId', '==', userId)
-      .get();
+    const userMessages = await getStoredMessagesForUser(userId);
     
     // Combine and get unique conversation partners
     const conversations = new Map();
     
-    [...sentSnapshot.docs, ...receivedSnapshot.docs].forEach(doc => {
-      const data = doc.data();
+    userMessages.forEach(data => {
       const partnerId = data.fromUserId === userId ? data.toUserId : data.fromUserId;
+      const messageTime = parseTimestamp(data.timestamp)?.getTime() || 0;
       
       if (!conversations.has(partnerId)) {
         conversations.set(partnerId, {
           userId: partnerId,
           lastMessage: data.message,
           lastTimestamp: data.timestamp,
+          lastTimestampMs: messageTime,
           unread: data.toUserId === userId && !data.read
         });
       } else {
         // Update if this message is more recent
         const existing = conversations.get(partnerId);
-        if (data.timestamp > existing.lastTimestamp) {
+        if (messageTime > existing.lastTimestampMs) {
           existing.lastMessage = data.message;
           existing.lastTimestamp = data.timestamp;
+          existing.lastTimestampMs = messageTime;
         }
         if (data.toUserId === userId && !data.read) {
           existing.unread = true;
         }
       }
     });
-    
-    res.json(Array.from(conversations.values()));
+
+    res.json(Array.from(conversations.values())
+      .sort((a, b) => b.lastTimestampMs - a.lastTimestampMs)
+      .map(({ lastTimestampMs, ...conversation }) => conversation));
   } catch (error) {
     console.error('Error fetching conversations:', error);
     res.status(500).json({ error: 'Error fetching conversations' });
@@ -1133,19 +1411,13 @@ app.get('/api/messages/conversations/:userId', requireAdminAuth, async (req, res
 app.get('/api/messages/conversation/:userId1/:userId2', requireAdminAuth, async (req, res) => {
   try {
     const { userId1, userId2 } = req.params;
-    
-    // Get messages in both directions
-    const snapshot = await db.collection('messages')
-      .where('fromUserId', 'in', [userId1, userId2])
-      .get();
-    
-    const messages = snapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
+    const userMessages = await getStoredMessagesForUser(userId1);
+    const messages = userMessages
       .filter(msg => 
         (msg.fromUserId === userId1 && msg.toUserId === userId2) ||
         (msg.fromUserId === userId2 && msg.toUserId === userId1)
       )
-      .sort((a, b) => a.timestamp - b.timestamp);
+      .sort((a, b) => (parseTimestamp(a.timestamp)?.getTime() || 0) - (parseTimestamp(b.timestamp)?.getTime() || 0));
     
     res.json(messages);
   } catch (error) {
@@ -1169,24 +1441,6 @@ app.post('/api/messages/send', requireAdminAuth, async (req, res) => {
     };
     
     const docRef = await db.collection('messages').add(messageObj);
-    
-    // Also update user's sentMessages and mailbox (for backwards compatibility)
-    const fromUserRef = db.doc(`users/${fromUserId}`);
-    const toUserRef = db.doc(`users/${toUserId}`);
-    
-    await fromUserRef.update({
-      sentMessages: admin.firestore.FieldValue.arrayUnion({
-        ...messageObj,
-        id: docRef.id
-      })
-    });
-    
-    await toUserRef.update({
-      mailbox: admin.firestore.FieldValue.arrayUnion({
-        ...messageObj,
-        id: docRef.id
-      })
-    });
     
     res.json({ success: true, messageId: docRef.id });
   } catch (error) {
@@ -1304,6 +1558,10 @@ app.get('/', (req, res) => {
   res.send('Hello from the backend server!');
 });
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server running on port ${port}`);
-});
+if (require.main === module) {
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
+
+module.exports = app;

@@ -1,290 +1,192 @@
-# LxRose Project
+# LxRose
 
-This repository contains one domain-aware React frontend and one shared backend:
+Domain-aware React frontend plus a shared Firebase Functions backend for LxRose.
 
-## Features
+## Live Sites
 
-### Public Website (lxroseinc.com)
-- Modern responsive design with FAQ, enhanced footer, and contact forms
-- Service booking system for Mental Health, Nursing, and Nutrition services
-- Professional nurse registration portal
-- Newsletter signup and welcome banner
-- Cookie consent management
-- Service-specific landing pages with detailed information
+- Public website: https://lxroseinc.com
+- Admin dashboard: https://lxrose.org
+- Firebase public hosting: https://lxroseinc.web.app
+- Firebase admin hosting: https://lxrose-admin.web.app
 
-### Admin Dashboard (lxrose.org)
-- Secure authentication and user management
-- Form submission management (contact forms, join forms, service bookings)
-- Internal messaging system between admin users
-- Service booking tracking (Mental Health, Nursing, Nutrition)
-- Nurse registration review system
-- Real-time data updates from Firestore
+## Architecture
 
-### Backend API
-- RESTful API with Express.js
-- Secure authentication with JWT tokens
-- Form data management and retrieval
-- Message handling between users
-- File upload support
-- Firebase Admin SDK integration
+```text
+LxRose/
+  backend/        Express API, Firebase Admin SDK, Firebase Functions entrypoint
+  lxroseinc/      Vite React app for both public and admin domains
+  firebase.json   Root Firebase deploy config for Functions, Hosting, and rules
+  .firebaserc     Firebase project and hosting target mapping
+```
 
-## Tech Stack
+The React app chooses the experience by hostname:
 
-### Frontend
-- **React** 18.2.0 - UI framework
-- **React Router** v6 - Client-side routing
-- **Firebase Client SDK** 10.4.0 - Authentication, Firestore, Storage
-- **Swiper** 11.1.15 - Carousels and sliders
-- **date-fns** 4.1.0 - Date formatting (admin dashboard)
+- `lxroseinc.com` and `www.lxroseinc.com` render the public website.
+- `lxrose.org` and `www.lxrose.org` render the admin dashboard.
+- Local admin mode can be forced with `VITE_SITE_MODE=admin`.
+
+The backend is deployed as a Firebase Gen 2 HTTPS Function named `api`. Firebase Hosting rewrites `/api/**`, `/login`, `/register`, `/verifyToken`, `/getUser/**`, and `/sendMessage` to that function.
+
+## Requirements
+
+- Node.js 22 for Firebase Functions compatibility
+- npm
+- Firebase CLI access to the `lxroseinc` Firebase project
+
+## Install
+
+```bash
+cd backend
+npm install
+
+cd ../lxroseinc
+npm install
+```
+
+## Local Environment
 
 ### Backend
-- **Node.js** with **Express** 4.18.2 - Server framework
-- **Firebase Admin SDK** 12.0.0 - Server-side Firebase operations
-- **bcrypt** 5.1.1 - Password hashing
-- **jsonwebtoken** 9.0.2 - JWT authentication
-- **multer** 1.4.5 - File upload handling
-- **dotenv** 16.0.3 - Environment variable management
 
-### Services & Infrastructure
-- **Firebase Firestore** - NoSQL database
-- **Firebase Authentication** - User authentication
-- **Firebase Storage** - File storage
-- **Firebase Hosting** - Website hosting
-
-## Project Structure
-
-### 1. lxroseinc/
-**Websites:** [lxroseinc.com](https://lxroseinc.com) and [lxrose.org](https://lxrose.org)
-
-**Description:** Unified React frontend. It renders the public website on `lxroseinc.com` and the admin dashboard on `lxrose.org`.
-
-**Technology Stack:**
-- React 18.2.0
-- React Router v6
-- Firebase 10.4.0 (Firestore, Hosting)
-- Swiper 11.0.7 (carousel/slider)
-
-**Public Features:**
-- Service pages (Nursing, Mental Health, Nutrition)
-- About and Contact pages
-- Service booking forms
-- Professional registration forms
-- Cookie consent management
-- Promotional popups
-
-**Admin Features:**
-- Backend-backed admin login
-- User authentication and management
-- View contact form submissions
-- View join/registration form submissions
-- Messaging system
-
-**Setup:**
-```bash
-cd lxroseinc
-npm install
-npm start          # Development server on http://localhost:3000
-npm run build      # Production build
-```
-
-Optional local `lxroseinc/.env`:
-```env
-REACT_APP_API_BASE_URL=http://localhost:5001
-# REACT_APP_SITE_MODE=admin
-```
-
-Uncomment `REACT_APP_SITE_MODE=admin` locally to force the admin dashboard on `localhost`. Do not set `REACT_APP_SITE_MODE` in production unless you intentionally want to override domain-based routing.
-
-**Firebase Deployment:**
-```bash
-firebase deploy --only hosting
-```
-
----
-
-### 2. backend/
-**Description:** Express.js backend server providing API endpoints for both websites.
-
-**Technology Stack:**
-- Node.js with Express 4.18.2
-- Firebase Admin SDK 12.0.0
-- bcrypt 5.1.1 (password hashing)
-- jsonwebtoken 9.0.2 (JWT authentication)
-- multer 1.4.5 (file uploads)
-
-**API Endpoints:**
-- `POST /register` - User registration
-- `POST /login` - User authentication
-- `POST /verifyToken` - Token verification
-- `GET /getUser/:userId` - Fetch user data
-- `POST /sendMessage` - Send messages between users
-- `GET /contactForms` - Retrieve contact form submissions
-- `GET /joinForms` - Retrieve join form submissions
-- `POST /uploadImage` - Image upload handling
-- `GET /testFirebase` - Test Firebase connection
-
-**Setup:**
-```bash
-cd backend
-npm install
-# IMPORTANT: Configure environment variables first (see Environment Setup section)
-cp .env.example .env
-# Edit .env with your credentials before running
-npm start          # Start server on http://localhost:5001
-npm run dev        # Development mode with nodemon
-```
-
-**Configuration:**
-- Requires environment variables (see Environment Setup & Security section)
-- Firebase Admin SDK credentials file (never commit this!)
-- Default port: 5001 (configurable via .env)
-- CORS enabled for cross-origin requests
-
----
-
-## Firebase Configuration
-
-Both websites use the same Firebase project: **lxroseinc**
-
-**Firebase Services Used:**
-- Firestore (Database)
-- Authentication
-- Storage
-- Hosting (dual-target: lxroseinc and lxroseorg)
-
-**Firebase Files:**
-- `firebase.json` - Hosting and service configuration
-- `firestore.rules` - Database security rules
-- `firestore.indexes.json` - Firestore indexes
-- `storage.rules` - Storage security rules
-
----
-
-## Environment Setup & Security
-
-### Backend Environment Variables
-
-The backend uses environment variables to protect sensitive credentials. **These must be configured before running the backend server.**
-
-#### Step 1: Create Environment File
+Create a local-only backend env file:
 
 ```bash
 cd backend
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-#### Step 2: Get Firebase Admin SDK Credentials
-
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Select your project (lxroseinc)
-3. Go to **Project Settings** > **Service Accounts**
-4. Click **Generate New Private Key**
-5. Save the downloaded JSON file as `lxroseinc-firebase-adminsdk-5g2cj-df13bfcd94.json` in the `backend/` folder
-
-**⚠️ CRITICAL:** This file contains private keys with full admin access. **NEVER commit it to Git!**
-
-#### Step 3: Generate JWT Secret
-
-Generate a secure random string for JWT token signing:
-
-```bash
-# On macOS/Linux:
-openssl rand -base64 32
-
-# On Windows (PowerShell):
-[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))
-```
-
-#### Step 4: Update .env File
-
-Edit `backend/.env` and add your values:
+Fill in:
 
 ```env
-FIREBASE_ADMIN_SDK_PATH=./lxroseinc-firebase-adminsdk-5g2cj-df13bfcd94.json
-JWT_SECRET=your_generated_secret_from_step_3
-PORT=5001
-FIREBASE_DATABASE_URL=https://lxroseinc-default-rtdb.firebaseio.com
-ADMIN_API_KEY=your_generated_admin_api_key
+LXROSE_ADMIN_SDK_PATH=./your-firebase-adminsdk.json
+JWT_SECRET=replace_with_local_jwt_secret
+LXROSE_PORT=5001
+LXROSE_DATABASE_URL=https://lxroseinc-default-rtdb.firebaseio.com
+ADMIN_API_KEY=replace_with_local_admin_api_key
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:5174,https://lxroseinc.com,https://www.lxroseinc.com,https://lxrose.org,https://www.lxrose.org
 ```
 
-### Frontend Configuration
+Do not create `backend/.env` for this project. Firebase Functions reads `backend/.env` during deploy as production environment variables, which can conflict with Secret Manager secrets.
 
-The frontend Firebase configuration is already set up and can be used as-is. These client-side API keys are safe to be public and are protected by Firebase Security Rules.
+Local Functions emulator secrets can live in:
 
-The admin dashboard also calls the backend login endpoint. Set `REACT_APP_API_BASE_URL` in `lxroseinc/.env` for local development or in your hosting environment for production.
+```text
+backend/.secret.local
+```
 
-The frontend chooses which experience to render from the hostname:
-- `lxroseinc.com` and `www.lxroseinc.com` render the public site
-- `lxrose.org` and `www.lxrose.org` render the admin dashboard
-- `REACT_APP_SITE_MODE=admin` forces admin mode locally
+That file should contain only:
 
-### Security Notes
+```env
+JWT_SECRET=...
+ADMIN_API_KEY=...
+```
 
-**What's Protected:**
-- ✅ Firebase Admin SDK private keys (backend only)
-- ✅ JWT secret for token signing
-- ✅ All `node_modules/` directories (heavy, auto-generated)
-- ✅ Build output directories
-- ✅ Environment variable files (`.env`)
+### Frontend
 
-**What's Safe to Commit:**
-- ✅ Client-side Firebase config (already in code)
-- ✅ Firebase Security Rules
-- ✅ Source code
-- ✅ Package configuration files
+`lxroseinc/.env` is optional for local development:
 
----
+```env
+VITE_API_BASE_URL=http://localhost:5001
+# VITE_SITE_MODE=admin
+```
 
-## Development Workflow
+Production uses same-origin Firebase Hosting rewrites, so `lxroseinc/.env.production` keeps `VITE_API_BASE_URL` empty.
 
-1. **Install dependencies** in each folder:
-   ```bash
-   cd lxroseinc && npm install
-   cd ../backend && npm install
-   ```
+## Secrets
 
-2. **Start development servers:**
-   ```bash
-   # Terminal 1 - Unified frontend
-   cd lxroseinc && npm start
+Never commit:
 
-   # Terminal 2 - Backend
-   cd backend && npm run dev
-   ```
+- `backend/.env.local`
+- `backend/.secret.local`
+- `lxroseinc/.env`
+- Firebase Admin SDK JSON files
+- private keys, passwords, or Firebase service account credentials
 
-3. **Build for production:**
-   ```bash
-   cd lxroseinc && npm run build
-   ```
+Production backend secrets are stored in Firebase Secret Manager:
 
-4. **Deploy to Firebase:**
-   ```bash
-   cd lxroseinc && firebase deploy --only hosting
-   ```
+```bash
+npx firebase functions:secrets:set JWT_SECRET --project lxroseinc
+npx firebase functions:secrets:set ADMIN_API_KEY --project lxroseinc
+```
 
----
+The public Firebase web API key in `lxroseinc/src/firebase.js` is client-side Firebase configuration. It is expected to be public and is protected by Firebase Security Rules.
 
-## Important Notes
+## Development
 
-- The backend server requires the Firebase Admin SDK credentials file to be present in the `backend/` folder
-- The unified frontend connects to the same Firebase project for both domains
-- The admin dashboard requires authentication before accessing features
-- All forms submit data to Firebase Firestore
-- The main website uses hash routing (`HashRouter`) for client-side routing
+Run the backend:
 
----
+```bash
+cd backend
+npm run dev
+```
 
-## GitHub Repositories
+Run the public frontend:
 
-- **Unified Frontend and Backend:** [https://github.com/ndmx/lxroseapp.git](https://github.com/ndmx/lxroseapp.git)
+```bash
+cd lxroseinc
+npm run dev
+```
 
----
+Run the admin frontend locally:
 
-## License
+```bash
+cd lxroseinc
+VITE_SITE_MODE=admin npm run dev
+```
 
-This project is proprietary and confidential.
+## Build
 
----
+```bash
+cd lxroseinc
+npm run build
+```
 
-**Designed by edentv** - Creator Studio
+The production build is written to `lxroseinc/dist/`.
+
+## Deploy
+
+Deploy from the repository root, not from `lxroseinc/`:
+
+```bash
+npx firebase deploy --only functions,hosting:lxroseinc,hosting:lxroseorg,firestore:rules --project lxroseinc
+```
+
+Optional full rules deploy:
+
+```bash
+npx firebase deploy --only functions,hosting:lxroseinc,hosting:lxroseorg,firestore:rules,storage --project lxroseinc
+```
+
+## Admin Features
+
+- Backend-backed login with bcrypt password storage
+- User creation, password change, and password reset
+- Unified submissions inbox across contact, booking, join, and nurse registration forms
+- Status management: New, Reviewed, Contacted, Scheduled, Closed
+- Assignment and internal notes
+- Messages tab for legacy mailbox messages and new message collection entries
+- Stats tab for contacts, signups, messages, submission type, and submission status
+- Reply helper that opens a prefilled email draft from the admin's email client
+
+## GitHub Readiness Checklist
+
+Before pushing:
+
+```bash
+git status --short
+git diff --check
+git ls-files | rg '(^|/)(\\.env|.*adminsdk.*\\.json|.*serviceAccount.*\\.json)$'
+```
+
+Expected: no secret env files or Firebase Admin SDK JSON files should be tracked.
+
+Verification commands:
+
+```bash
+cd backend
+node -c server.js
+node -c index.js
+
+cd ../lxroseinc
+npm run build
+VITE_SITE_MODE=admin npm run build
+```

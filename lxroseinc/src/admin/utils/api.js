@@ -1,4 +1,13 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+const getDefaultApiBaseUrl = () => {
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    return "http://localhost:5001";
+  }
+
+  return "";
+};
+
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = configuredApiBaseUrl !== undefined ? configuredApiBaseUrl : getDefaultApiBaseUrl();
 
 export const getAuthToken = () => (
   localStorage.getItem("authToken") || sessionStorage.getItem("authToken")
@@ -36,12 +45,45 @@ export const getCurrentUser = (userId) => apiRequest(`/getUser/${userId}`);
 
 export const getAllUsers = () => apiRequest("/api/users/all");
 
+export const createAdminUser = (user) => apiRequest("/register", {
+  method: "POST",
+  body: JSON.stringify(user)
+});
+
+export const changeOwnPassword = (passwords) => apiRequest("/api/users/me/password", {
+  method: "POST",
+  body: JSON.stringify(passwords)
+});
+
+export const resetUserPassword = (userId, newPassword) => apiRequest(`/api/users/${userId}/password`, {
+  method: "PATCH",
+  body: JSON.stringify({ newPassword })
+});
+
 export const getUnifiedSubmissions = () => apiRequest("/api/submissions");
+
+export const getDashboardAnalytics = () => apiRequest("/api/analytics/dashboard");
 
 export const updateSubmission = (type, id, updates) => apiRequest(`/api/submissions/${type}/${id}`, {
   method: "PATCH",
   body: JSON.stringify(updates)
 });
+
+export const getConversations = (userId) => apiRequest(`/api/messages/conversations/${userId}`);
+
+export const getConversationMessages = (userId, partnerId) => (
+  apiRequest(`/api/messages/conversation/${userId}/${partnerId}`)
+);
+
+export const sendConversationMessage = (fromUserId, toUserId, message) => apiRequest("/api/messages/send", {
+  method: "POST",
+  body: JSON.stringify({ fromUserId, toUserId, message })
+});
+
+export const markConversationRead = (userId, partnerId) => apiRequest(
+  `/api/messages/conversation/${userId}/${partnerId}/mark-read`,
+  { method: "PUT" }
+);
 
 export const formatAdminTimestamp = (timestamp) => {
   if (!timestamp) {
