@@ -1,72 +1,36 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    function publicSubmissionFields() {
-      return request.resource.data.keys().hasOnly([
-        'name',
-        'email',
-        'phone',
-        'subject',
-        'message',
-        'timestamp',
-        'status',
-        'serviceCategory',
-        'additionalInfo',
-        'service',
-        'selectedService',
-        'serviceId',
-        'serviceTitle',
-        'serviceType',
-        'notes',
-        'patientAge',
-        'careDuration',
-        'startDate',
-        'contactInfo',
-        'additionalNotes',
-        'qualifications',
-        'yearsOfExperience',
-        'availability',
-        'info'
-      ]);
+    function text(field, min, max) {
+      let value = request.resource.data.get(field, '');
+      return value is string && value.size() >= min && value.size() <= max;
     }
-
-    function hasTimestamp() {
-      return request.resource.data.timestamp is timestamp;
+    function identity() {
+      return text('name', 1, 120) && text('email', 3, 254)
+        && request.resource.data.email.matches('[^@ ]+@[^@ ]+[.][^@ ]+')
+        && request.resource.data.timestamp == request.time;
     }
-
-    match /contactForms/{documentId} {
-      allow create: if publicSubmissionFields() && hasTimestamp();
-      allow read, update, delete: if false;
+    function contact() {
+      return request.resource.data.keys().hasOnly(['name','email','phone','subject','message','timestamp'])
+        && identity() && text('phone', 0, 40) && text('subject', 0, 200) && text('message', 1, 4000);
     }
-
-    match /joinForms/{documentId} {
-      allow create: if publicSubmissionFields() && hasTimestamp();
-      allow read, update, delete: if false;
+    function booking() {
+      return request.resource.data.keys().hasOnly(['name','email','phone','serviceType','serviceCategory','notes','timestamp'])
+        && identity() && text('phone', 0, 40) && text('serviceType', 1, 200)
+        && text('serviceCategory', 1, 100) && text('notes', 0, 4000);
     }
-
-    match /mentalServicesBookings/{documentId} {
-      allow create: if publicSubmissionFields() && hasTimestamp();
-      allow read, update, delete: if false;
+    match /contactForms/{id} { allow create: if contact(); }
+    match /joinForms/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['name','email','timestamp']) && identity();
     }
-
-    match /nursingServiceBookings/{documentId} {
-      allow create: if publicSubmissionFields() && hasTimestamp();
-      allow read, update, delete: if false;
+    match /mentalServicesBookings/{id} { allow create: if booking(); }
+    match /nursingServiceBookings/{id} { allow create: if booking(); }
+    match /nutritionServiceBookings/{id} { allow create: if booking(); }
+    match /nurseRegistrations/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['name','email','phone','qualifications','yearsOfExperience','availability','timestamp'])
+        && identity() && text('phone', 0, 40) && text('qualifications', 1, 1000)
+        && text('yearsOfExperience', 1, 3) && text('availability', 0, 1000);
     }
-
-    match /nurseRegistrations/{documentId} {
-      allow create: if publicSubmissionFields() && hasTimestamp();
-      allow read, update, delete: if false;
-    }
-
-    match /nutritionServiceBookings/{documentId} {
-      allow create: if publicSubmissionFields() && hasTimestamp();
-      allow read, update, delete: if false;
-    }
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
+    match /{document=**} { allow read, write: if false; }
   }
 }

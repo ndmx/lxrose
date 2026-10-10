@@ -1,0 +1,10 @@
+{
+  "firestore": { "rules": "lxroseinc/firestore.rules" },
+  "database": { "rules": "lxroseinc/database.rules.json" },
+  "emulators": {
+    "firestore": { "port": 8085 },
+    "database": { "port": 9005 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}

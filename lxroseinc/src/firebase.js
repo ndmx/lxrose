@@ -1,20 +1,32 @@
-// Import the functions you need from the SDKs you need
-import 'firebase/firestore';
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
-};
+let database;
+async function getDatabase() {
+  if (database) return database;
+  database = (async () => {
+    const env = import.meta.env;
+    let config = {
+      apiKey: env.VITE_FIREBASE_API_KEY,
+      authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: env.VITE_FIREBASE_PROJECT_ID,
+      appId: env.VITE_FIREBASE_APP_ID,
+    };
+    if (!config.apiKey || !config.projectId || !config.appId) {
+      // Firebase Hosting serves public web configuration for the current project.
+      const response = await fetch('/__/firebase/init.json');
+      if (!response.ok) throw new Error('Firebase configuration is unavailable');
+      config = await response.json();
+      if (!config.apiKey || !config.projectId || !config.appId) throw new Error('Invalid Firebase configuration');
+    }
+    return getFirestore(getApps()[0] || initializeApp(config));
+  })();
+  try { return await database; }
+  catch (error) { database = undefined; throw error; }
+}
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app); // Initialize Firestore
-export { db };
+export async function submitPublicForm(collectionName, fields) {
+  const db = await getDatabase();
+  const result = await addDoc(collection(db, collectionName), { ...fields, timestamp: serverTimestamp() });
+  return result.id;
+}

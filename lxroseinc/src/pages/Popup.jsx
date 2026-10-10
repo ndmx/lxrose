@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { addDoc, collection, Timestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { submitPublicForm } from '../firebase';
 
 const Popup = ({ handleClose }) => {
   const [showForm, setShowForm] = useState(false);
@@ -17,11 +16,9 @@ const Popup = ({ handleClose }) => {
     const { name, email } = formData;
 
     try {
-      const timestamp = Timestamp.fromDate(new Date());
-      await addDoc(collection(db, 'joinForms'), {
+      await submitPublicForm('joinForms', {
         name,
         email,
-        timestamp,
       });
       setMessage('Thanks for joining! We\'ll be in touch soon.');
       setFormData({ name: '', email: '' });
@@ -77,7 +74,7 @@ const Popup = ({ handleClose }) => {
                   <input
                     type="text"
                     placeholder="Your name"
-                    name="name"
+                    name="name" maxLength={120}
                     required
                     onChange={handleInputChange}
                     value={formData.name}
@@ -86,7 +83,7 @@ const Popup = ({ handleClose }) => {
                   <input
                     type="email"
                     placeholder="Your email"
-                    name="email"
+                    name="email" maxLength={254}
                     required
                     onChange={handleInputChange}
                     value={formData.email}

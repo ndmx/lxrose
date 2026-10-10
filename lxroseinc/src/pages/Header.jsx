@@ -1,120 +1,34 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
-const Header = () => {
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+export default function Header() {
+  const [open, setOpen] = useState(false);
+  const toggle = useRef(null);
   const location = useLocation();
-  const navigate = useNavigate();
-
-  // Track scroll direction
-  const handleScroll = useCallback(() => {
-    const currentScrollY = window.scrollY;
-
-    if (currentScrollY > lastScrollY && currentScrollY > 50) {
-      setIsVisible(false);
-    } else if (currentScrollY < lastScrollY) {
-      setIsVisible(true);
-    }
-
-    setLastScrollY(currentScrollY);
-  }, [lastScrollY]);
-
+  useEffect(() => { setOpen(false); }, [location.pathname, location.hash]);
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [handleScroll]);
-
-  const handleServicesClick = (e) => {
-    e.preventDefault();
-    if (location.pathname === "/") {
-      const servicesSection = document.getElementById('services');
-      if (servicesSection) {
-        servicesSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      navigate('/#services');
-    }
+    if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+    else window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location.pathname, location.hash]);
+  const closeOnEscape = (event) => {
+    if (event.key === 'Escape' && open) { setOpen(false); toggle.current?.focus(); }
   };
-
-  const handleContactsClick = (e) => {
-    e.preventDefault();
-    if (location.pathname === "/") {
-      const contactsSection = document.getElementById('contact');
-      if (contactsSection) {
-        contactsSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      navigate("/contact");
-    }
-  };
-
   return (
-    <header
-      id="mainHeader"
-      style={{
-        transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
-        transition: 'transform 0.3s ease-in-out',
-      }}
-    >
-      <div id="logo">
-        <Link
-          to="/"
-          onClick={(e) => {
-            if (window.location.pathname === '/') {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          }}
-        >
-          <img src="/logo512.png" id="logo-img" alt="Logo for LxRose" />
-        </Link>
-      </div>
-      <nav id="mainNav">
-        <ul>
-          <li>
-            <Link
-              to="/"
-              onClick={(e) => {
-                if (window.location.pathname === '/') {
-                  e.preventDefault();
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
-            >
-              Home
-            </Link>
-          </li>
-          <li
-            onMouseEnter={() => setShowDropdown(true)}
-            onMouseLeave={() => setShowDropdown(false)}
-          >
-            <a href="#services" onClick={handleServicesClick}>Services</a>
-            {showDropdown && (
-              <div className="dropdown-content">
-                <div className="dropdown-pointer"></div>
-                <Link to="/mentalservices">Mental Health Services</Link>
-                <Link to="/nutritionservices">Nutrition Services</Link>
-                <Link to="/nursingservices">Nursing Services</Link>
-              </div>
-            )}
-          </li>
-          <li>
-            <a href="#contact" onClick={handleContactsClick}>Contact Us</a>
-          </li>
-          <li>
-            <Link to="/faq">FAQ</Link>
-          </li>
-          <li>
-            <Link to="/about">About</Link>
-          </li>
-        </ul>
+    <header className="lx-header" onKeyDown={closeOnEscape}>
+      <a className="lx-skip" href="#main-content">Skip to content</a>
+      <Link className="lx-brand" to="/" aria-label="LxRose home">
+        <img src="/logo512.png" alt="" width="48" height="48" />
+        <span>LxRose<span className="lx-brand-note">Care, thoughtfully connected.</span></span>
+      </Link>
+      <button className="lx-menu-toggle" ref={toggle} type="button" aria-expanded={open} aria-controls="lx-navigation" onClick={() => setOpen(!open)}>
+        {open ? 'Close' : 'Menu'} <span aria-hidden="true">{open ? '−' : '+'}</span>
+      </button>
+      <nav id="lx-navigation" className={`lx-navigation ${open ? 'is-open' : ''}`} aria-label="Main navigation">
+        <Link to="/#services" onClick={() => setOpen(false)}>Our services</Link>
+        <Link to="/about" onClick={() => setOpen(false)}>About LxRose</Link>
+        <Link to="/faq" onClick={() => setOpen(false)}>Questions</Link>
+        <Link className="lx-button lx-button-small" to="/contact" onClick={() => setOpen(false)}>Find your care <span aria-hidden="true">↗</span></Link>
       </nav>
     </header>
   );
-};
-
-export default Header;
+}

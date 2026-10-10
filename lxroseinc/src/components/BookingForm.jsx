@@ -34,7 +34,7 @@ const BookingForm = ({ service, options, formData, isSubmitting, alert, onChange
             <input
               id="bf-name"
               type="text"
-              name="name"
+              name="name" maxLength={120}
               value={formData.name}
               onChange={onChange}
               placeholder="Full name"
@@ -48,7 +48,7 @@ const BookingForm = ({ service, options, formData, isSubmitting, alert, onChange
             <input
               id="bf-email"
               type="email"
-              name="email"
+              name="email" maxLength={254}
               value={formData.email}
               onChange={onChange}
               placeholder="Email Address"
@@ -67,7 +67,7 @@ const BookingForm = ({ service, options, formData, isSubmitting, alert, onChange
           <input
             id="bf-phone"
             type="tel"
-            name="phone"
+            name="phone" maxLength={40}
             value={formData.phone}
             onChange={onChange}
             placeholder="(885) 242-2860"
@@ -80,7 +80,7 @@ const BookingForm = ({ service, options, formData, isSubmitting, alert, onChange
           <label htmlFor="bf-notes">Notes</label>
           <textarea
             id="bf-notes"
-            name="notes"
+            name="notes" maxLength={4000}
             value={formData.notes}
             onChange={onChange}
             placeholder="Any details we should know before reaching out?"
@@ -100,7 +100,7 @@ const BookingForm = ({ service, options, formData, isSubmitting, alert, onChange
       </form>
 
       {alert && (
-        <div className={`booking-alert booking-alert--${alert.type}`}>
+        <div role="status" className={`booking-alert booking-alert--${alert.type}`}>
           {alert.message}
         </div>
       )}

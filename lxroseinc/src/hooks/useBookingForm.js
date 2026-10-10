@@ -1,11 +1,7 @@
 import { useState } from 'react';
-import { addDoc, collection, Timestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { submitPublicForm } from '../firebase';
 
 const EMPTY = { serviceType: '', name: '', email: '', phone: '', notes: '' };
-
-const toServiceId = (value) =>
-  value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 export function useBookingForm(collectionName, serviceCategory) {
   const [formData, setFormData] = useState(EMPTY);
@@ -21,25 +17,9 @@ export function useBookingForm(collectionName, serviceCategory) {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const selectedService = formData.serviceType;
-      const contactInfo = [formData.name, formData.email, formData.phone]
-        .filter(Boolean)
-        .join(' | ');
-
-      await addDoc(collection(db, collectionName), {
-        serviceCategory,
-        service: selectedService,
-        selectedService,
-        serviceType: selectedService,
-        serviceTitle: selectedService,
-        serviceId: selectedService ? toServiceId(selectedService) : null,
-        additionalInfo: formData.notes,
-        additionalNotes: formData.notes,
-        info: formData.notes,
-        contactInfo,
-        status: 'new',
+      await submitPublicForm(collectionName, {
         ...formData,
-        timestamp: Timestamp.fromDate(new Date()),
+        serviceCategory,
       });
       setAlert({ type: 'success', message: 'Booking submitted! We\'ll be in touch soon.' });
       setFormData(EMPTY);

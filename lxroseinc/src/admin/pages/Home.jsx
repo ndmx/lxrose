@@ -72,6 +72,8 @@ const Home = ({ userId }) => {
   const [user, setUser] = useState(null);
   const [allUsers, setAllUsers] = useState([]);
   const [submissions, setSubmissions] = useState([]);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [stats, setStats] = useState(defaultStats);
   const [typeOptions, setTypeOptions] = useState([]);
   const [statusOptions, setStatusOptions] = useState(Object.keys(statusLabels));
@@ -120,6 +122,7 @@ const Home = ({ userId }) => {
       setUser(currentUser);
       setAllUsers(users);
       setSubmissions(inbox.submissions || []);
+      setNextCursor(inbox.nextCursor);
       setStats(inbox.stats || defaultStats);
       setSiteAnalytics(analytics || defaultAnalytics);
       setTypeOptions(inbox.typeOptions || []);
@@ -133,6 +136,16 @@ const Home = ({ userId }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const loadMoreSubmissions = async () => {
+    setLoadingMore(true);
+    try {
+      const page = await getUnifiedSubmissions(nextCursor);
+      setSubmissions(current => [...new Map([...current, ...page.submissions].map(item => [`${item.type}/${item.id}`, item])).values()]);
+      setNextCursor(page.nextCursor);
+    } catch (error) { setError(error.message); }
+    finally { setLoadingMore(false); }
   };
 
   useEffect(() => {
@@ -517,7 +530,7 @@ const Home = ({ userId }) => {
           <div className="inbox-toolbar">
             <div>
               <h2 id="inbox-title">Unified Inbox</h2>
-              <p>{filteredSubmissions.length} visible of {submissions.length} total</p>
+              <p>{filteredSubmissions.length} visible of {submissions.length} loaded</p>
             </div>
             <div className="inbox-search">
               <svg viewBox="0 0 24 24" fill="currentColor" className="search-icon">
@@ -562,6 +575,9 @@ const Home = ({ userId }) => {
           ) : (
             <div className="admin-empty-state">No submissions match those filters.</div>
           )}
+          {nextCursor && <button type="button" className="admin-refresh-button" onClick={loadMoreSubmissions} disabled={loadingMore}>
+            {loadingMore ? 'Loading…' : 'Load older requests'}
+          </button>}
         </section>
 
         <aside className={`detail-drawer ${selectedSubmission ? "open" : ""}`} aria-label="Submission details">
@@ -623,7 +639,8 @@ const Home = ({ userId }) => {
                 </button>
               </div>
 
-              <div className="detail-controls">
+              {selectedSubmission.invalidFields?.length > 0 && <p className="admin-alert" role="status">Some fields in this older request are invalid and have been hidden. Review the original record before processing.</p>}
+              <fieldset className="detail-controls" disabled={!["admin", "staff"].includes(user?.role)}>
                 <label htmlFor="submission-status">
                   Status
                   <select id="submission-status" value={draftStatus} onChange={(event) => setDraftStatus(event.target.value)}>
@@ -655,10 +672,10 @@ const Home = ({ userId }) => {
                   />
                 </label>
 
-                <button className="save-detail-button" type="button" onClick={handleSaveSubmission} disabled={isSaving}>
+                <button className="save-detail-button" type="button" onClick={handleSaveSubmission} disabled={isSaving || !["admin", "staff"].includes(user?.role)}>
                   {isSaving ? "Saving..." : "Save Changes"}
                 </button>
-              </div>
+              </fieldset>
             </>
           ) : (
             <div className="admin-empty-state">Select a submission to see the details.</div>
@@ -897,7 +914,7 @@ const Home = ({ userId }) => {
               </form>
             </section>
 
-            <form className="create-user-panel" onSubmit={handleCreateUser}>
+            {user?.role === 'admin' && <form className="create-user-panel" onSubmit={handleCreateUser}>
               <div>
                 <p className="admin-kicker">New Access</p>
                 <h3>Add Admin User</h3>
@@ -955,9 +972,9 @@ const Home = ({ userId }) => {
               <button type="submit" disabled={isCreatingUser}>
                 {isCreatingUser ? "Creating..." : "Create User"}
               </button>
-            </form>
+            </form>}
 
-            <form className="create-user-panel" onSubmit={handleResetUserPassword}>
+            {user?.role === 'admin' && <form className="create-user-panel" onSubmit={handleResetUserPassword}>
               <div>
                 <p className="admin-kicker">Password Reset</p>
                 <h3>Reset User Password</h3>
@@ -1002,7 +1019,7 @@ const Home = ({ userId }) => {
               <button type="submit" disabled={isResettingPassword}>
                 {isResettingPassword ? "Resetting..." : "Reset Password"}
               </button>
-            </form>
+            </form>}
           </div>
         </div>
       )}

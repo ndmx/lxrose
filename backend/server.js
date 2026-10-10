@@ -13,8 +13,6 @@ const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const admin = require("firebase-admin");
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
 const { ipKeyGenerator } = rateLimit;
 
 // Configuration from environment variables
@@ -101,7 +99,7 @@ const verifyAdminToken = (token) => {
 
   const [encodedHeader, encodedPayload, signature] = token.split('.');
 
-  if (!encodedHeader || !encodedPayload || !signature) {
+  if (token.split('.').length !== 3 || !encodedHeader || !encodedPayload || !signature) {
     throw new Error('Malformed token');
   }
 
@@ -123,7 +121,7 @@ const verifyAdminToken = (token) => {
 
   const payload = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8'));
 
-  if (!payload.exp || payload.exp < Math.floor(Date.now() / 1000)) {
+  if (!Number.isFinite(payload.exp) || payload.exp <= Math.floor(Date.now() / 1000) || !validId(payload.userId)) {
     throw new Error('Expired token');
   }
 
@@ -144,7 +142,7 @@ const corsOptions = {
       : callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
 };
 
@@ -192,50 +190,56 @@ app.use('/login', authLimiter);
 
 app.use(express.json({ limit: '1mb' })); // Middleware to parse JSON bodies
 
-const requireAdminAuth = (req, res, next) => {
-  const authHeader = req.headers.authorization || '';
-  const [scheme, token] = authHeader.split(' ');
+const roles = ['admin', 'staff', 'viewer'];
+const accountRole = (user) => roles.includes(user.role) ? user.role : 'viewer';
+const activeAccount = (user) => user && user.disabled !== true && user.active !== false;
+const validId = (value) => typeof value === 'string' && value.length > 0 && value.length <= 256 && !value.includes('/');
+const textValue = (value) => typeof value === 'string' ? value : (typeof value === 'number' && Number.isFinite(value) ? String(value) : '');
+const boundedLimit = (value, fallback = 100) => Math.min(250, Math.max(1, Number.parseInt(value, 10) || fallback));
 
+const requireAdminAuth = async (req, res, next) => {
+  const [scheme, token] = (req.headers.authorization || '').split(' ');
   if (scheme === 'Bearer' && token) {
     try {
       const decoded = verifyAdminToken(token);
-      req.userId = decoded.userId;
+      const doc = await db.collection('users').doc(decoded.userId).get();
+      const user = doc.data();
+      if (!doc.exists || !activeAccount(user) ||
+          (decoded.tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) {
+        return res.status(401).json({ error: 'Session expired. Please sign in again.' });
+      }
+      req.userId = doc.id;
+      req.account = user;
+      req.role = accountRole(user);
       return next();
-    } catch (error) {
-      return res.status(401).json({ error: 'Unauthorized: invalid token' });
+    } catch {
+      return res.status(401).json({ error: 'Unauthorized: invalid session' });
     }
   }
-
-  const adminApiKey = getAdminApiKey();
-  if (!adminApiKey) {
-    return res.status(500).json({ error: 'Server configuration error: missing admin API key' });
-  }
-
-  const providedKey = req.headers['x-api-key'] || req.query.apiKey;
-  if (providedKey && providedKey === adminApiKey) {
+  // Service credentials are explicit header credentials, never URL parameters.
+  const key = getAdminApiKey();
+  if (key && req.headers['x-api-key'] === key) {
+    req.role = 'admin';
+    req.serviceAccount = true;
     return next();
   }
-  return res.status(401).json({ error: 'Unauthorized: invalid API key' });
+  return res.status(401).json({ error: 'Unauthorized' });
 };
 
+const requireEditor = (req, res, next) => ['admin', 'staff'].includes(req.role)
+  ? next() : res.status(403).json({ error: 'Viewer access is read-only.' });
+const requireUser = (req, res, next) => req.userId
+  ? next() : res.status(403).json({ error: 'A signed-in user is required.' });
+const requireOwnRoute = (param) => (req, res, next) => req.userId === req.params[param]
+  ? next() : res.status(403).json({ error: 'You cannot access another user’s messages.' });
+
 const escapeCsvValue = (value = '') => {
-  const stringValue = value === null || value === undefined ? '' : String(value);
+  const stringValue = textValue(value);
   const safeValue = /^[\s]*[=+\-@]/.test(stringValue) ? `'${stringValue}` : stringValue;
   return `"${safeValue.replace(/"/g, '""')}"`;
 };
 
-const formatTimestamp = (timestamp) => {
-  if (!timestamp) {
-    return '';
-  }
-
-  if (typeof timestamp.toDate === 'function') {
-    return timestamp.toDate().toISOString();
-  }
-
-  const date = new Date(timestamp);
-  return Number.isNaN(date.getTime()) ? '' : date.toISOString();
-};
+const formatTimestamp = (value) => parseTimestamp(value)?.toISOString() || '';
 
 const isBcryptHash = (password) => /^\$2[aby]\$\d{2}\$/.test(password || '');
 
@@ -248,30 +252,15 @@ const isPasswordValid = async (plainPassword, storedPassword) => {
 };
 
 const assertAdminCanManageUsers = async (req, res) => {
-  if (!req.userId) {
-    return true;
-  }
-
-  const adminDoc = await db.collection('users').doc(req.userId).get();
-  const role = adminDoc.data()?.role;
-
-  // Existing users were created before roles existed, so missing role keeps admin access.
-  if (!role || role === 'admin') {
-    return true;
-  }
-
-  res.status(403).send({ message: 'Only admin users can manage user access' });
+  if (req.role === 'admin') return true;
+  res.status(403).json({ message: 'Only admin users can manage user access' });
   return false;
 };
 
 const getSafeUser = (doc) => {
-  const { password, ...safeUser } = doc.data();
-  return {
-    id: doc.id,
-    role: safeUser.role || 'admin',
-    mustChangePassword: Boolean(safeUser.mustChangePassword),
-    ...safeUser
-  };
+  const user = doc.data();
+  return { id: doc.id, username: textValue(user.username), email: textValue(user.email),
+    role: accountRole(user), mustChangePassword: Boolean(user.mustChangePassword) };
 };
 
 const submissionTypes = {
@@ -310,7 +299,7 @@ const submissionTypes = {
 const submissionStatuses = ['new', 'reviewed', 'contacted', 'scheduled', 'closed'];
 
 const normalizeSubmissionStatus = (status) => {
-  const value = (status || 'new').toString().toLowerCase();
+  const value = typeof status === 'string' ? status.toLowerCase() : 'new';
   const legacyStatusMap = {
     unread: 'new',
     read: 'reviewed',
@@ -320,28 +309,19 @@ const normalizeSubmissionStatus = (status) => {
     archived: 'closed'
   };
 
-  return submissionStatuses.includes(value) ? value : (legacyStatusMap[value] || 'new');
+  return submissionStatuses.includes(value) ? value : (Object.hasOwn(legacyStatusMap, value) ? legacyStatusMap[value] : 'new');
 };
 
-const parseTimestamp = (timestamp) => {
-  if (!timestamp) {
-    return null;
-  }
-
-  if (typeof timestamp.toDate === 'function') {
-    return timestamp.toDate();
-  }
-
-  if (typeof timestamp._seconds === 'number') {
-    return new Date(timestamp._seconds * 1000);
-  }
-
-  if (typeof timestamp.seconds === 'number') {
-    return new Date(timestamp.seconds * 1000);
-  }
-
-  const date = new Date(timestamp);
-  return Number.isNaN(date.getTime()) ? null : date;
+const parseTimestamp = (value) => {
+  try {
+    let date;
+    if (value instanceof admin.firestore.Timestamp) date = value.toDate();
+    else if (value instanceof Date) date = value;
+    else if (typeof value === 'string' || typeof value === 'number') date = new Date(value);
+    else if (value && typeof value._seconds === 'number') date = new Date(value._seconds * 1000);
+    else if (value && typeof value.seconds === 'number') date = new Date(value.seconds * 1000);
+    return date && Number.isFinite(date.getTime()) ? date : null;
+  } catch { return null; }
 };
 
 const getSubmissionFields = (type, data) => {
@@ -414,8 +394,9 @@ const getSubmissionFields = (type, data) => {
 
 const normalizeSubmission = (type, doc) => {
   const config = submissionTypes[type];
-  const data = doc.data();
-  const timestamp = parseTimestamp(data.timestamp);
+  const stored = doc.data();
+  const data = Object.fromEntries(Object.entries(stored).map(([key, value]) => [key, textValue(value)]));
+  const timestamp = parseTimestamp(stored.timestamp);
   const fields = getSubmissionFields(type, data);
 
   return {
@@ -428,8 +409,9 @@ const normalizeSubmission = (type, doc) => {
     status: normalizeSubmissionStatus(data.status),
     assignedTo: data.assignedTo || '',
     internalNotes: data.internalNotes || '',
-    updatedAt: formatTimestamp(data.updatedAt),
-    raw: data
+    updatedAt: formatTimestamp(stored.updatedAt),
+    raw: data,
+    invalidFields: Object.entries(stored).filter(([key, value]) => !['timestamp', 'updatedAt'].includes(key) && value !== null && typeof value === 'object').map(([key]) => key)
   };
 };
 
@@ -507,7 +489,8 @@ app.post('/register', requireAdminAuth, async (req, res) => {
   const username = String(req.body.username || '').trim();
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = String(req.body.password || '');
-  const role = String(req.body.role || 'admin').trim() || 'admin';
+  const role = req.body.role || 'viewer';
+  if (!roles.includes(role)) return res.status(400).json({ message: 'Invalid role' });
 
   if (!username || !email || !password) {
     return res.status(400).send({ message: 'Username, email, and password are required' });
@@ -543,6 +526,7 @@ app.post('/register', requireAdminAuth, async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      tokenVersion: 0,
       mustChangePassword: true,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       createdBy: req.userId || 'api-key'
@@ -567,6 +551,7 @@ app.post('/register', requireAdminAuth, async (req, res) => {
 // POST /login
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
+  if (typeof username !== 'string' || typeof password !== 'string' || username.length > 320 || password.length > 1024) return res.status(400).json({ message: 'Invalid login fields' });
   try {
     // Search for the user by username first, then email for admin identities like admin@lxrose.org.
     const usersRef = admin.firestore().collection('users');
@@ -588,15 +573,22 @@ app.post('/login', async (req, res) => {
 
     if (!isBcryptHash(user.password) && passwordIsValid) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      await userDoc.ref.update({ password: hashedPassword });
+      const upgraded = await db.runTransaction(async transaction => {
+        const current = await transaction.get(userDoc.ref);
+        if (!current.exists || !activeAccount(current.data()) || current.data().password !== user.password
+            || (current.data().tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) return false;
+        transaction.update(userDoc.ref, { password: hashedPassword });
+        return true;
+      });
+      if (!upgraded) return res.status(401).send('Invalid username or password');
     }
 
-    if (!passwordIsValid) {
+    if (!passwordIsValid || !activeAccount(user)) {
       return res.status(401).send('Invalid username or password');
     }
 
     // Generate a JWT token
-    const token = signAdminToken({ userId: userDoc.id });
+    const token = signAdminToken({ userId: userDoc.id, tokenVersion: user.tokenVersion ?? 0 });
     res.json({ token, userId: userDoc.id, mustChangePassword: Boolean(user.mustChangePassword) });
   } catch (error) {
     res.status(500).send({ message: 'Login error' });
@@ -619,6 +611,7 @@ app.post('/verifyToken', async (req, res) => {
 // GET /getUser/:userId
 app.get('/getUser/:userId', requireAdminAuth, async (req, res) => {
   const userId = req.params.userId;
+  if (req.userId !== userId && req.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
   try {
     const userRef = admin.firestore().doc(`users/${userId}`);
     const userSnap = await userRef.get();
@@ -664,14 +657,20 @@ app.post('/api/users/me/password', requireAdminAuth, async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await userRef.update({
-      password: hashedPassword,
-      mustChangePassword: false,
-      passwordUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      passwordUpdatedBy: req.userId
+    await db.runTransaction(async transaction => {
+      const current = await transaction.get(userRef);
+      if (!current.exists || (current.data().tokenVersion ?? 0) !== (req.account.tokenVersion ?? 0)
+          || current.data().password !== user.password || !activeAccount(current.data())) throw new Error('Session changed');
+      transaction.update(userRef, {
+        password: hashedPassword,
+        tokenVersion: admin.firestore.FieldValue.increment(1),
+        mustChangePassword: false,
+        passwordUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        passwordUpdatedBy: req.userId
+      });
     });
 
-    res.json({ success: true, message: 'Password changed successfully' });
+    res.json({ success: true, message: 'Password changed successfully. Sign in again.' });
   } catch (error) {
     console.error('Error changing password:', error);
     res.status(500).send({ message: 'Error changing password' });
@@ -706,6 +705,7 @@ app.patch('/api/users/:userId/password', requireAdminAuth, async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await userRef.update({
       password: hashedPassword,
+      tokenVersion: admin.firestore.FieldValue.increment(1),
       mustChangePassword: true,
       passwordResetAt: admin.firestore.FieldValue.serverTimestamp(),
       passwordResetBy: req.userId || 'api-key'
@@ -723,19 +723,25 @@ app.patch('/api/users/:userId/password', requireAdminAuth, async (req, res) => {
   }
 });
 
-// POST /sendMessage
-app.post('/sendMessage', requireAdminAuth, async (req, res) => {
-  const { fromId, toId, messageObj } = req.body;
+// Both current and legacy send APIs persist canonical messages with authenticated identity.
+const sendMessage = async (req, res) => {
+  const legacy = req.path === '/sendMessage';
+  const claimedSender = legacy ? req.body.fromId : req.body.fromUserId;
+  const recipient = legacy ? req.body.toId : req.body.toUserId;
+  const message = legacy ? req.body.messageObj?.message : req.body.message;
+  if (claimedSender !== undefined && claimedSender !== req.userId) return res.status(403).json({ error: 'Sender does not match session' });
+  if (!validId(recipient) || typeof message !== 'string' || !message.trim() || message.length > 10000) return res.status(400).json({ error: 'Invalid recipient or message' });
   try {
-    const fromUserRef = admin.firestore().doc(`users/${fromId}`);
-    const toUserRef = admin.firestore().doc(`users/${toId}`);
-    await fromUserRef.update({ sentMessages: admin.firestore.FieldValue.arrayUnion(messageObj) });
-    await toUserRef.update({ mailbox: admin.firestore.FieldValue.arrayUnion(messageObj) });
-    res.send({ status: 'success' });
-  } catch (error) {
-    res.status(500).send('Error sending message');
-  }
-});
+    const recipientDoc = await db.collection('users').doc(recipient).get();
+    if (!recipientDoc.exists || !activeAccount(recipientDoc.data())) return res.status(400).json({ error: 'Recipient is unavailable' });
+    const doc = await db.collection('messages').add({
+      fromUserId: req.userId, toUserId: recipient, message: message.trim(), read: false,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+    res.json({ success: true, status: 'success', messageId: doc.id });
+  } catch { res.status(500).json({ error: 'Error sending message' }); }
+};
+app.post('/sendMessage', requireAdminAuth, requireUser, sendMessage);
 
 // GET /contactForms
 app.get('/contactForms', requireAdminAuth, async (req, res) => {
@@ -761,29 +767,6 @@ app.get('/joinForms', requireAdminAuth, async (req, res) => {
   }
 });
 
-// POST /uploadImage
-app.post('/uploadImage', upload.single('image'), async (req, res) => {
-  const file = req.file;
-  const userId = req.body.userId;
-  // Image upload logic goes here
-});
-
-// Test Firebase Connection
-app.get('/testFirebase', async (req, res) => {
-  try {
-    const docRef = db.collection('someCollection').doc('someDocId');
-    const doc = await docRef.get();
-    if (!doc.exists) {
-      res.send('No such document!');
-    } else {
-      res.send(doc.data());
-    }
-  } catch (error) {
-    console.error('Error connecting to Firestore:', error);
-    res.status(500).send('Error connecting to Firestore');
-  }
-});
-
 // ============== FORM MANAGEMENT APIs ==============
 
 // GET Contact Forms with filtering
@@ -796,7 +779,7 @@ app.get('/api/forms/contact', requireAdminAuth, async (req, res) => {
       query = query.where('status', '==', status);
     }
     
-    const snapshot = await query.orderBy('timestamp', 'desc').limit(parseInt(limit)).get();
+    const snapshot = await query.orderBy('timestamp', 'desc').limit(boundedLimit(limit)).get();
     const forms = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(forms);
   } catch (error) {
@@ -806,7 +789,7 @@ app.get('/api/forms/contact', requireAdminAuth, async (req, res) => {
 });
 
 // Mark Contact Form as Read
-app.post('/api/forms/contact/:id/mark-read', requireAdminAuth, async (req, res) => {
+app.post('/api/forms/contact/:id/mark-read', requireAdminAuth, requireEditor, async (req, res) => {
   try {
     const { id } = req.params;
     await db.collection('contactForms').doc(id).update({
@@ -821,7 +804,7 @@ app.post('/api/forms/contact/:id/mark-read', requireAdminAuth, async (req, res) 
 });
 
 // Archive Contact Form
-app.post('/api/forms/contact/:id/archive', requireAdminAuth, async (req, res) => {
+app.post('/api/forms/contact/:id/archive', requireAdminAuth, requireEditor, async (req, res) => {
   try {
     const { id } = req.params;
     await db.collection('contactForms').doc(id).update({
@@ -836,10 +819,12 @@ app.post('/api/forms/contact/:id/archive', requireAdminAuth, async (req, res) =>
 });
 
 // Reply to Contact Form
-app.post('/api/forms/contact/:id/reply', requireAdminAuth, async (req, res) => {
+app.post('/api/forms/contact/:id/reply', requireAdminAuth, requireEditor, async (req, res) => {
   try {
     const { id } = req.params;
-    const { replyMessage, repliedBy } = req.body;
+    const { replyMessage } = req.body;
+    if (typeof replyMessage !== 'string' || replyMessage.length > 10000) return res.status(400).json({ error: 'Invalid reply' });
+    const repliedBy = req.userId || 'api-key';
     
     await db.collection('contactForms').doc(id).update({
       status: 'replied',
@@ -897,7 +882,7 @@ app.get('/api/forms/join', requireAdminAuth, async (req, res) => {
       query = query.where('status', '==', status);
     }
     
-    const snapshot = await query.orderBy('timestamp', 'desc').limit(parseInt(limit)).get();
+    const snapshot = await query.orderBy('timestamp', 'desc').limit(boundedLimit(limit)).get();
     const forms = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(forms);
   } catch (error) {
@@ -907,7 +892,7 @@ app.get('/api/forms/join', requireAdminAuth, async (req, res) => {
 });
 
 // Mark Join Form as Welcomed
-app.post('/api/forms/join/:id/mark-welcomed', requireAdminAuth, async (req, res) => {
+app.post('/api/forms/join/:id/mark-welcomed', requireAdminAuth, requireEditor, async (req, res) => {
   try {
     const { id } = req.params;
     await db.collection('joinForms').doc(id).update({
@@ -958,23 +943,44 @@ app.get('/api/forms/join/export', requireAdminAuth, async (req, res) => {
 app.get('/api/submissions', requireAdminAuth, async (req, res) => {
   try {
     const { limit = 250 } = req.query;
-    const perCollectionLimit = Math.max(1, parseInt(limit, 10) || 250);
-    const snapshots = await Promise.all(
-      Object.entries(submissionTypes).map(async ([type, config]) => {
-        const snapshot = await db
-          .collection(config.collection)
-          .orderBy('timestamp', 'desc')
-          .limit(perCollectionLimit)
-          .get();
-
-        return snapshot.docs.map((doc) => normalizeSubmission(type, doc));
-      })
-    );
-
-    const submissions = snapshots
-      .flat()
-      .sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))
-      .slice(0, perCollectionLimit);
+    const perCollectionLimit = boundedLimit(limit, 250);
+    let cursors = {};
+    if (req.query.cursor) {
+      try {
+        if (typeof req.query.cursor !== 'string' || req.query.cursor.length > 6000) throw new Error();
+        cursors = JSON.parse(Buffer.from(req.query.cursor, 'base64url').toString());
+        if (!cursors || Array.isArray(cursors) || typeof cursors !== 'object') throw new Error();
+        for (const [type, cursor] of Object.entries(cursors)) {
+          if (!Object.hasOwn(submissionTypes, type) || !validId(cursor.id) || !Number.isInteger(cursor.seconds) || !Number.isInteger(cursor.nanoseconds)) throw new Error();
+          new admin.firestore.Timestamp(cursor.seconds, cursor.nanoseconds);
+        }
+      } catch { return res.status(400).json({ error: 'Invalid cursor' }); }
+    }
+    const snapshots = await Promise.all(Object.entries(submissionTypes).map(async ([type, config]) => {
+      let query = db.collection(config.collection)
+        .where('timestamp', '<=', admin.firestore.Timestamp.now())
+        .orderBy('timestamp', 'desc').orderBy(admin.firestore.FieldPath.documentId(), 'desc');
+      const cursor = cursors[type];
+      if (cursor) query = query.startAfter(new admin.firestore.Timestamp(cursor.seconds, cursor.nanoseconds), cursor.id);
+      const snapshot = await query.limit(perCollectionLimit + 1).get();
+      return snapshot.docs.map(doc => ({ type, doc, value: normalizeSubmission(type, doc) }));
+    }));
+    const records = snapshots.flat().sort((a, b) => {
+      const left = a.doc.data().timestamp;
+      const right = b.doc.data().timestamp;
+      return (right?.seconds || 0) - (left?.seconds || 0) ||
+        (right?.nanoseconds || 0) - (left?.nanoseconds || 0) ||
+        Buffer.compare(Buffer.from(b.doc.id), Buffer.from(a.doc.id)) || a.type.localeCompare(b.type);
+    });
+    const page = records.slice(0, perCollectionLimit);
+    for (const { type, doc } of page) {
+      const time = doc.data().timestamp;
+      // Only actual timestamps can be used as query continuation values.
+      if (time instanceof admin.firestore.Timestamp) cursors[type] = { id: doc.id, seconds: time.seconds, nanoseconds: time.nanoseconds };
+    }
+    const submissions = page.map(record => record.value);
+    const nextCursor = records.length > perCollectionLimit
+      ? Buffer.from(JSON.stringify(cursors)).toString('base64url') : null;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -1007,6 +1013,7 @@ app.get('/api/submissions', requireAdminAuth, async (req, res) => {
 
     res.json({
       submissions,
+      nextCursor,
       stats,
       typeOptions: Object.entries(submissionTypes).map(([value, config]) => ({
         value,
@@ -1021,7 +1028,7 @@ app.get('/api/submissions', requireAdminAuth, async (req, res) => {
 });
 
 // PATCH unified operations inbox submission metadata.
-app.patch('/api/submissions/:type/:id', requireAdminAuth, async (req, res) => {
+app.patch('/api/submissions/:type/:id', requireAdminAuth, requireEditor, async (req, res) => {
   try {
     const { type, id } = req.params;
     const config = submissionTypes[type];
@@ -1034,19 +1041,20 @@ app.patch('/api/submissions/:type/:id', requireAdminAuth, async (req, res) => {
     const { status, assignedTo, internalNotes } = req.body;
 
     if (status !== undefined) {
-      const normalizedStatus = normalizeSubmissionStatus(status);
-      if (!submissionStatuses.includes(normalizedStatus)) {
+      if (typeof status !== 'string' || !submissionStatuses.includes(status)) {
         return res.status(400).json({ error: 'Invalid status' });
       }
-      updates.status = normalizedStatus;
+      updates.status = status;
     }
 
     if (assignedTo !== undefined) {
-      updates.assignedTo = String(assignedTo).trim();
+      if (typeof assignedTo !== 'string' || assignedTo.length > 320) return res.status(400).json({ error: 'Invalid assignee' });
+      updates.assignedTo = assignedTo.trim();
     }
 
     if (internalNotes !== undefined) {
-      updates.internalNotes = String(internalNotes);
+      if (typeof internalNotes !== 'string' || internalNotes.length > 10000) return res.status(400).json({ error: 'Invalid notes' });
+      updates.internalNotes = internalNotes;
     }
 
     updates.updatedAt = admin.firestore.FieldValue.serverTimestamp();
@@ -1076,7 +1084,7 @@ app.get('/api/forms/mental-bookings', requireAdminAuth, async (req, res) => {
     }
     
     if (limit) {
-      query = query.limit(parseInt(limit));
+      query = query.limit(boundedLimit(limit));
     }
     
     const snapshot = await query.get();
@@ -1089,7 +1097,7 @@ app.get('/api/forms/mental-bookings', requireAdminAuth, async (req, res) => {
 });
 
 // Mark Mental Health Booking as Contacted
-app.post('/api/forms/mental-bookings/:id/mark-contacted', requireAdminAuth, async (req, res) => {
+app.post('/api/forms/mental-bookings/:id/mark-contacted', requireAdminAuth, requireEditor, async (req, res) => {
   try {
     const { id } = req.params;
     await db.collection('mentalServicesBookings').doc(id).update({
@@ -1116,8 +1124,8 @@ app.get('/api/forms/mental-bookings/export', requireAdminAuth, async (req, res) 
       const row = [
         escapeCsvValue(booking.name),
         escapeCsvValue(booking.email),
-        escapeCsvValue(booking.selectedService || booking.service),
-        escapeCsvValue(booking.additionalInfo),
+        escapeCsvValue(booking.serviceType || booking.selectedService || booking.service),
+        escapeCsvValue(booking.notes || booking.additionalInfo),
         escapeCsvValue(formatTimestamp(booking.timestamp)),
         escapeCsvValue(booking.status || 'new')
       ];
@@ -1146,7 +1154,7 @@ app.get('/api/forms/nursing-bookings', requireAdminAuth, async (req, res) => {
     }
     
     if (limit) {
-      query = query.limit(parseInt(limit));
+      query = query.limit(boundedLimit(limit));
     }
     
     const snapshot = await query.get();
@@ -1159,7 +1167,7 @@ app.get('/api/forms/nursing-bookings', requireAdminAuth, async (req, res) => {
 });
 
 // Mark Nursing Booking as Contacted
-app.post('/api/forms/nursing-bookings/:id/mark-contacted', requireAdminAuth, async (req, res) => {
+app.post('/api/forms/nursing-bookings/:id/mark-contacted', requireAdminAuth, requireEditor, async (req, res) => {
   try {
     const { id } = req.params;
     await db.collection('nursingServiceBookings').doc(id).update({
@@ -1188,8 +1196,8 @@ app.get('/api/forms/nursing-bookings/export', requireAdminAuth, async (req, res)
         escapeCsvValue(booking.patientAge),
         escapeCsvValue(booking.careDuration),
         escapeCsvValue(booking.startDate),
-        escapeCsvValue(booking.contactInfo),
-        escapeCsvValue(booking.additionalNotes),
+        escapeCsvValue(booking.contactInfo || [booking.name, booking.email, booking.phone].map(textValue).filter(Boolean).join(' | ')),
+        escapeCsvValue(booking.notes || booking.additionalNotes),
         escapeCsvValue(formatTimestamp(booking.timestamp)),
         escapeCsvValue(booking.status || 'new')
       ];
@@ -1218,7 +1226,7 @@ app.get('/api/forms/nurse-registrations', requireAdminAuth, async (req, res) => 
     }
     
     if (limit) {
-      query = query.limit(parseInt(limit));
+      query = query.limit(boundedLimit(limit));
     }
     
     const snapshot = await query.get();
@@ -1231,7 +1239,7 @@ app.get('/api/forms/nurse-registrations', requireAdminAuth, async (req, res) => 
 });
 
 // Mark Nurse Registration as Reviewed
-app.post('/api/forms/nurse-registrations/:id/mark-reviewed', requireAdminAuth, async (req, res) => {
+app.post('/api/forms/nurse-registrations/:id/mark-reviewed', requireAdminAuth, requireEditor, async (req, res) => {
   try {
     const { id } = req.params;
     await db.collection('nurseRegistrations').doc(id).update({
@@ -1289,7 +1297,7 @@ app.get('/api/forms/nutrition-bookings', requireAdminAuth, async (req, res) => {
     }
     
     if (limit) {
-      query = query.limit(parseInt(limit));
+      query = query.limit(boundedLimit(limit));
     }
     
     const snapshot = await query.get();
@@ -1302,7 +1310,7 @@ app.get('/api/forms/nutrition-bookings', requireAdminAuth, async (req, res) => {
 });
 
 // Mark Nutrition Booking as Contacted
-app.post('/api/forms/nutrition-bookings/:id/mark-contacted', requireAdminAuth, async (req, res) => {
+app.post('/api/forms/nutrition-bookings/:id/mark-contacted', requireAdminAuth, requireEditor, async (req, res) => {
   try {
     const { id } = req.params;
     await db.collection('nutritionServiceBookings').doc(id).update({
@@ -1327,11 +1335,11 @@ app.get('/api/forms/nutrition-bookings/export', requireAdminAuth, async (req, re
     
     bookings.forEach(booking => {
       const row = [
-        escapeCsvValue(booking.serviceId),
-        escapeCsvValue(booking.serviceTitle),
+        escapeCsvValue(booking.serviceId || textValue(booking.serviceType).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')),
+        escapeCsvValue(booking.serviceType || booking.serviceTitle),
         escapeCsvValue(booking.name),
         escapeCsvValue(booking.email),
-        escapeCsvValue(booking.info),
+        escapeCsvValue(booking.notes || booking.info),
         escapeCsvValue(formatTimestamp(booking.timestamp)),
         escapeCsvValue(booking.status || 'new')
       ];
@@ -1355,7 +1363,7 @@ app.get('/api/forms/nutrition-bookings/export', requireAdminAuth, async (req, re
 app.get('/api/users/all', requireAdminAuth, async (req, res) => {
   try {
     const snapshot = await db.collection('users').get();
-    const users = snapshot.docs.map(doc => getSafeUser(doc));
+    const users = snapshot.docs.filter(doc => activeAccount(doc.data())).map(doc => getSafeUser(doc));
     res.json(users);
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -1364,7 +1372,7 @@ app.get('/api/users/all', requireAdminAuth, async (req, res) => {
 });
 
 // Get All Conversations for a User
-app.get('/api/messages/conversations/:userId', requireAdminAuth, async (req, res) => {
+app.get('/api/messages/conversations/:userId', requireAdminAuth, requireUser, requireOwnRoute('userId'), async (req, res) => {
   try {
     const { userId } = req.params;
     const userMessages = await getStoredMessagesForUser(userId);
@@ -1408,10 +1416,11 @@ app.get('/api/messages/conversations/:userId', requireAdminAuth, async (req, res
 });
 
 // Get Messages Between Two Users
-app.get('/api/messages/conversation/:userId1/:userId2', requireAdminAuth, async (req, res) => {
+app.get('/api/messages/conversation/:userId1/:userId2', requireAdminAuth, requireUser, async (req, res) => {
   try {
     const { userId1, userId2 } = req.params;
-    const userMessages = await getStoredMessagesForUser(userId1);
+    if (![userId1, userId2].includes(req.userId)) return res.status(403).json({ error: 'Forbidden' });
+    const userMessages = await getStoredMessagesForUser(req.userId);
     const messages = userMessages
       .filter(msg => 
         (msg.fromUserId === userId1 && msg.toUserId === userId2) ||
@@ -1426,34 +1435,16 @@ app.get('/api/messages/conversation/:userId1/:userId2', requireAdminAuth, async 
   }
 });
 
-// Send Message (Enhanced)
-app.post('/api/messages/send', requireAdminAuth, async (req, res) => {
-  try {
-    const { fromUserId, toUserId, message } = req.body;
-    
-    const messageObj = {
-      fromUserId,
-      toUserId,
-      message,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      read: false,
-      conversationId: [fromUserId, toUserId].sort().join('_')
-    };
-    
-    const docRef = await db.collection('messages').add(messageObj);
-    
-    res.json({ success: true, messageId: docRef.id });
-  } catch (error) {
-    console.error('Error sending message:', error);
-    res.status(500).json({ error: 'Error sending message' });
-  }
-});
+app.post('/api/messages/send', requireAdminAuth, requireUser, sendMessage);
 
 // Mark Message as Read
-app.put('/api/messages/:id/mark-read', requireAdminAuth, async (req, res) => {
+app.put('/api/messages/:id/mark-read', requireAdminAuth, requireUser, async (req, res) => {
   try {
     const { id } = req.params;
-    await db.collection('messages').doc(id).update({
+    const messageRef = db.collection('messages').doc(id);
+    const messageDoc = await messageRef.get();
+    if (!messageDoc.exists || messageDoc.data().toUserId !== req.userId) return res.status(403).json({ error: 'Forbidden' });
+    await messageRef.update({
       read: true,
       readAt: admin.firestore.FieldValue.serverTimestamp()
     });
@@ -1465,7 +1456,7 @@ app.put('/api/messages/:id/mark-read', requireAdminAuth, async (req, res) => {
 });
 
 // Mark All Messages in Conversation as Read
-app.put('/api/messages/conversation/:userId1/:userId2/mark-read', requireAdminAuth, async (req, res) => {
+app.put('/api/messages/conversation/:userId1/:userId2/mark-read', requireAdminAuth, requireUser, requireOwnRoute('userId1'), async (req, res) => {
   try {
     const { userId1, userId2 } = req.params;
     
@@ -1508,22 +1499,22 @@ app.get('/api/analytics/dashboard', requireAdminAuth, async (req, res) => {
     
     // Filter by date
     const contactToday = contactSnapshot.docs.filter(doc => {
-      const timestamp = doc.data().timestamp?.toDate();
+      const timestamp = parseTimestamp(doc.data().timestamp);
       return timestamp >= today;
     }).length;
     
     const contactWeek = contactSnapshot.docs.filter(doc => {
-      const timestamp = doc.data().timestamp?.toDate();
+      const timestamp = parseTimestamp(doc.data().timestamp);
       return timestamp >= weekAgo;
     }).length;
     
     const joinToday = joinSnapshot.docs.filter(doc => {
-      const timestamp = doc.data().timestamp?.toDate();
+      const timestamp = parseTimestamp(doc.data().timestamp);
       return timestamp >= today;
     }).length;
     
     const joinWeek = joinSnapshot.docs.filter(doc => {
-      const timestamp = doc.data().timestamp?.toDate();
+      const timestamp = parseTimestamp(doc.data().timestamp);
       return timestamp >= weekAgo;
     }).length;
     

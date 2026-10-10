@@ -26,8 +26,8 @@ const CookieBanner = () => {
   return (
     <div className="cookie-banner">
       <p>
-        We use cookies to improve your experience. By continuing, you agree to our{' '}
-        <a href="/privacy-policy" target="_blank">Privacy Policy</a>.
+        Choose whether to allow optional cookies. Learn more in our{' '}
+        <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
       </p>
       <div className="cookie-buttons">
         <button className="accept" onClick={handleAccept}>Accept</button>

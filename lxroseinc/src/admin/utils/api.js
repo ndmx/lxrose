@@ -50,17 +50,25 @@ export const createAdminUser = (user) => apiRequest("/register", {
   body: JSON.stringify(user)
 });
 
-export const changeOwnPassword = (passwords) => apiRequest("/api/users/me/password", {
+export const changeOwnPassword = async (passwords) => {
+  const result = await apiRequest("/api/users/me/password", {
   method: "POST",
   body: JSON.stringify(passwords)
-});
+  });
+  for (const storage of [localStorage, sessionStorage]) {
+    storage.removeItem('authToken');
+    storage.removeItem('userId');
+  }
+  window.location.assign('/');
+  return result;
+};
 
 export const resetUserPassword = (userId, newPassword) => apiRequest(`/api/users/${userId}/password`, {
   method: "PATCH",
   body: JSON.stringify({ newPassword })
 });
 
-export const getUnifiedSubmissions = () => apiRequest("/api/submissions");
+export const getUnifiedSubmissions = (cursor) => apiRequest(`/api/submissions${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`);
 
 export const getDashboardAnalytics = () => apiRequest("/api/analytics/dashboard");
 

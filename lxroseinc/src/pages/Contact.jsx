@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { addDoc, collection, Timestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { submitPublicForm } from '../firebase';
 import { Link } from 'react-router-dom';
 
 const Contact = () => {
@@ -78,8 +77,7 @@ const Contact = () => {
 
     setIsSubmitting(true);
     try {
-      const timestamp = Timestamp.fromDate(new Date());
-      await addDoc(collection(db, 'contactForms'), { ...formData, timestamp });
+      await submitPublicForm('contactForms', formData);
       setAlertMessage('Thank you! We\'ll get back to you within 24 hours.');
       setShowAlert(true);
       setTimeout(() => {
@@ -188,7 +186,7 @@ const Contact = () => {
                   <input
                     type="text"
                     id="name"
-                    name="name"
+                    name="name" maxLength={120}
                     value={formData.name}
                     onChange={handleInputChange}
                     className={errors.name ? 'cf-error' : ''}
@@ -204,7 +202,7 @@ const Contact = () => {
                   <input
                     type="email"
                     id="email"
-                    name="email"
+                    name="email" maxLength={254}
                     value={formData.email}
                     onChange={handleInputChange}
                     className={errors.email ? 'cf-error' : ''}
@@ -225,7 +223,7 @@ const Contact = () => {
                   <input
                     type="tel"
                     id="phone"
-                    name="phone"
+                    name="phone" maxLength={40}
                     value={formData.phone}
                     onChange={handleInputChange}
                     className={errors.phone ? 'cf-error' : ''}

@@ -1,11 +1,11 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as HashRouter, Route, Routes } from 'react-router-dom';
 import Header from './pages/Header';
 import Home from './pages/Home';
 import Contact from './pages/Contact';
 import About from './pages/About';
 import Footer from './pages/Footer';
-import Popup from './pages/Popup';
+import { publicTheme } from './theme';
 import CookieBanner from './utils/CookieBanner'; // Adjusted import path
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import NutritionServices from './pages/NutritionServices';
@@ -33,37 +33,11 @@ const setMetaContent = (selector, content) => {
 };
 
 function PublicApp() {
-  const [showPopup, setShowPopup] = useState(false);
-
-  useEffect(() => {
-    // Check if banner was dismissed this session
-    const bannerDismissed = sessionStorage.getItem('welcomeBannerDismissed');
-    const bannerDismissedPermanent = localStorage.getItem('welcomeBannerDismissed');
-    
-    // Show banner only if not dismissed in this session or permanently
-    if (!bannerDismissed && !bannerDismissedPermanent) {
-      // Small delay before showing banner for better UX
-      const timer = setTimeout(() => {
-        setShowPopup(true);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const handleClose = () => {
-    setShowPopup(false);
-    // Store in sessionStorage so it doesn't show again this session
-    sessionStorage.setItem('welcomeBannerDismissed', 'true');
-  };
-
   return (
     <HashRouter>
-      <div className="public-site-shell">
+      <div className="public-site-shell lumina-public" style={publicTheme}>
         <Header />
-        <CookieBanner /> {/* Render Cookie Banner */}
-        {showPopup && <Popup handleClose={handleClose} />}
-        <main className="page-content">
+        <main id="main-content" className="page-content" tabIndex={-1}>
           <Routes>
             <Route exact path="/" element={<Home />} />
             <Route path="/mentalservices" element={<MentalServices />} />
@@ -76,6 +50,7 @@ function PublicApp() {
           </Routes>
         </main>
         <Footer />
+        <CookieBanner />
       </div>
     </HashRouter>
   );

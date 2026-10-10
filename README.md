@@ -82,7 +82,7 @@ ADMIN_API_KEY=...
 
 ### Frontend
 
-`lxroseinc/.env` is optional for local development:
+`lxroseinc/.env.local` is optional for local development. Use the `VITE_FIREBASE_*` public web settings in `.env.example` to submit forms locally. On Firebase Hosting the application loads the project web configuration from `/__/firebase/init.json` when a form is submitted:
 
 ```env
 VITE_API_BASE_URL=http://localhost:5001
@@ -147,13 +147,13 @@ The production build is written to `lxroseinc/dist/`.
 Deploy from the repository root, not from `lxroseinc/`:
 
 ```bash
-npx firebase deploy --only functions,hosting:lxroseinc,hosting:lxroseorg,firestore:rules --project lxroseinc
+npx firebase deploy --only functions,hosting:lxroseinc,hosting:lxroseorg,firestore:rules,database --project lxroseinc
 ```
 
 Optional full rules deploy:
 
 ```bash
-npx firebase deploy --only functions,hosting:lxroseinc,hosting:lxroseorg,firestore:rules,storage --project lxroseinc
+npx firebase deploy --only functions,hosting:lxroseinc,hosting:lxroseorg,firestore:rules,database,storage --project lxroseinc
 ```
 
 ## Admin Features
@@ -190,3 +190,26 @@ cd ../lxroseinc
 npm run build
 VITE_SITE_MODE=admin npm run build
 ```
+
+## Security behavior and regression checks
+
+Administrators manage user access. Staff and administrators can update care-request workflow fields through current and legacy routes. Viewers can read operational records but cannot update them. Personal messages remain private to their participants, including for administrators. The service API key is accepted only in `X-API-Key`; it cannot impersonate a message participant. Account directories expose only basic identity and role fields.
+
+Accounts without a recognized role receive viewer access. A project owner must explicitly assign an existing legacy account its intended `admin`, `staff`, or `viewer` role in Firestore after reviewing that account. No account is automatically promoted. Setting `disabled: true` or `active: false` blocks future API requests and logins. Password changes and resets increment `tokenVersion`; existing bearer sessions are revoked. Users sign in again after changing their own password.
+
+Anonymous Firestore writes accept only typed, bounded collection schemas and a server timestamp. The public booking payload is `name`, `email`, `phone`, `serviceType`, `serviceCategory`, `notes`, and `timestamp`. Public callers cannot set workflow status, assignment, or internal notes. Rules do not prevent all anonymous spam: App Check or a server intake service with durable abuse controls remains future work. Realtime Database is unused and denied at the root; do not enable it for this application.
+
+The inbox has bounded cursor pagination and flags malformed legacy fields. Its summary counts describe the current page; older requests remain available through **Load older requests**. Existing future-dated records are excluded rather than silently promoted ahead of real requests. Investigate such records separately without deleting legitimate data.
+
+Run security tests only against the isolated demo project (requires Node 22 and Java):
+
+```bash
+./lxroseinc/node_modules/.bin/firebase emulators:exec --project demo-lxrose --config firebase.test.json --only firestore,database "npm --prefix backend test"
+npm --prefix lxroseinc test
+npm --prefix lxroseinc run build
+git diff --check
+```
+
+Deploy the frontend and API, then the stricter rules from the same pushed commit. Old cached public forms using client timestamps will be rejected by the new rules; reload the page to use the updated form. No production account, password, or submission is modified by the deployment itself.
+
+The public homepage uses `@xlumina/system` 1.1.0, Variation 05, with locally hosted Manrope and Cormorant Garamond fonts. Font licenses are in `lxroseinc/public/fonts/`. The navigation is operable by keyboard; Escape closes the mobile menu and restores focus. Form inputs are preserved on save failure, and success is shown only after Firestore confirms persistence.
