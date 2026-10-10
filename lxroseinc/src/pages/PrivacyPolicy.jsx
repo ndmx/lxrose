@@ -1,13 +1,12 @@
+import PageIntro from '../components/PageIntro';
 import React from 'react';
 
 const PrivacyPolicy = () => {
   return (
-    <div className="privacy-policy-container">
-      <section className="privacy-hero-section">
-        <p className="privacy-kicker">Privacy Policy</p>
-        <h1>How We Handle Your Information</h1>
-        <p><strong>Effective Date:</strong> Jan 01 2024</p>
-      </section>
+    <div className="lx-page privacy-policy-container">
+      <PageIntro eyebrow="Privacy policy" title="How we handle your information.">
+        <p>Effective date: January 1, 2024</p>
+      </PageIntro>
 
       <div className="privacy-policy-content">
       <section>

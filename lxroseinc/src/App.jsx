@@ -1,7 +1,9 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter as HashRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Header from './pages/Header';
 import Home from './pages/Home';
+import Services from './pages/Services';
+import RouteScroll from './components/RouteScroll';
 import Contact from './pages/Contact';
 import About from './pages/About';
 import Footer from './pages/Footer';
@@ -34,11 +36,13 @@ const setMetaContent = (selector, content) => {
 
 function PublicApp() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <div className="public-site-shell lumina-public" style={publicTheme}>
+        <RouteScroll />
         <Header />
         <main id="main-content" className="page-content" tabIndex={-1}>
           <Routes>
+            <Route path="/services" element={<Services />} />
             <Route exact path="/" element={<Home />} />
             <Route path="/mentalservices" element={<MentalServices />} />
             <Route path="/nutritionservices" element={<NutritionServices />} />
@@ -52,7 +56,7 @@ function PublicApp() {
         <Footer />
         <CookieBanner />
       </div>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 

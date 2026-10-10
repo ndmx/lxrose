@@ -1,3 +1,4 @@
+import PageIntro from '../components/PageIntro';
 import React from 'react';
 
 const teamMembers = [
@@ -48,16 +49,10 @@ const values = [
 
 const About = () => {
   return (
-    <div className="about-page">
-      <section className="about-hero-section">
-        <p className="about-kicker">About LxRose</p>
-        <h1>Care that connects health, people, and practical technology.</h1>
-        <p>
-          LxRose brings together healthcare professionals and technology-minded
-          builders to make wellness support easier to access, easier to
-          understand, and easier to follow through on.
-        </p>
-      </section>
+    <div className="lx-page about-page">
+      <PageIntro eyebrow="About LxRose" title="Care that connects people.">
+        <p>LxRose brings mental health, nursing, and nutrition support together with practical technology, keeping people at the centre of care.</p>
+      </PageIntro>
 
       <div id="mainContent" className="about-section">
         <section className="about-story-section">

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import PageIntro from './PageIntro';
 import React, { useState } from 'react';
 
 const FAQ = () => {
@@ -167,14 +169,10 @@ const FAQ = () => {
   })).filter(category => category.questions.length > 0);
 
   return (
-    <div>
-      <div id="home-banner4" className="banner">
-        <div className="container">
-          <div className="header-text">
-            <h1>Frequently Asked Questions</h1>
-          </div>
-        </div>
-      </div>
+    <div className="lx-page">
+      <PageIntro eyebrow="Questions" title="A little clarity, before you begin.">
+        <p>Find answers about our services and what to expect next.</p>
+      </PageIntro>
 
       <div className="faq-container">
 
@@ -182,8 +180,9 @@ const FAQ = () => {
         <input
           type="text"
           placeholder="Search questions..."
+          aria-label="Search questions"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => { setSearchTerm(e.target.value); setActiveIndex(null); }}
           className="faq-search-input"
         />
       </div>
@@ -207,11 +206,12 @@ const FAQ = () => {
                     >
                       <button
                         className="faq-question"
+                        aria-expanded={isActive}
                         onClick={() => toggleAccordion(globalIndex)}
                       >
                         <span className="question-text">{item.question}</span>
                         <span className={`accordion-icon ${isActive ? 'rotated' : ''}`}>
-                          Expand
+                          {isActive ? '−' : '+'}
                         </span>
                       </button>
                       <div className={`faq-answer ${isActive ? 'show' : ''}`}>
@@ -233,7 +233,7 @@ const FAQ = () => {
       <div className="faq-footer">
         <h3>Still have questions?</h3>
         <p>Can't find what you're looking for? Our team is here to help!</p>
-        <a href="/contact" className="contact-button">Contact Us</a>
+        <Link to="/contact" className="lx-button">Contact us <span aria-hidden="true">↗</span></Link>
       </div>
       </div>
     </div>

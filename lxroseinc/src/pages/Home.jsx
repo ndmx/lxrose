@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { submitPublicForm } from '../firebase';
+import ServiceLinks from '../components/ServiceLinks';
 import careImage from '../components/images/nurse-with-child.png';
 
-const services = [
-  { number: '01', title: 'Mental health', path: '/mentalservices', description: 'Make room for your wellbeing. Explore support for your emotional and mental health.', detail: 'Support for your whole self' },
-  { number: '02', title: 'Nursing care', path: '/nursingservices', description: 'Find practical, personal care for you or someone close to you.', detail: 'Care with a human connection' },
-  { number: '03', title: 'Nutrition', path: '/nutritionservices', description: 'Take the next step toward eating well, with guidance shaped around your needs.', detail: 'Everyday habits, personal guidance' },
-];
 const emptyForm = { name: '', email: '', message: '' };
 
 export default function Home() {
@@ -36,7 +32,7 @@ export default function Home() {
           <p className="lx-intro">Mental health, nursing, and nutrition support.<br className="lx-desktop-break" /> A thoughtful next step for you and the people you care about.</p>
           <div className="lx-hero-actions">
             <Link className="lx-button" to="/contact">Find your care <span aria-hidden="true">↗</span></Link>
-            <a className="lx-text-link" href="#services">Explore our services <span aria-hidden="true">↓</span></a>
+            <Link className="lx-text-link" to="/services">Explore our services <span aria-hidden="true">↗</span></Link>
           </div>
           <p className="lx-hero-footnote">People first. Technology in support.</p>
         </div>
@@ -48,13 +44,7 @@ export default function Home() {
 
       <section id="services" className="lx-services" aria-labelledby="services-title">
         <div className="lx-section-heading"><p className="lx-eyebrow">Our services</p><h2 id="services-title">Different needs.<br /><em>The same thoughtful care.</em></h2></div>
-        <div className="lx-service-list">
-          {services.map(service => <Link className="lx-service" key={service.path} to={service.path}>
-            <span className="lx-service-number">{service.number}</span>
-            <div><p className="lx-service-detail">{service.detail}</p><h3>{service.title}</h3><p>{service.description}</p></div>
-            <span className="lx-service-arrow" aria-hidden="true">↗</span>
-          </Link>)}
-        </div>
+        <ServiceLinks />
       </section>
 
       <section className="lx-approach" aria-labelledby="approach-title">

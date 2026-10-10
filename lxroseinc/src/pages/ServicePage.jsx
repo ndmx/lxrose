@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import PageIntro from '../components/PageIntro';
 import React, { useRef } from 'react';
 import BookingForm from '../components/BookingForm';
 import { useBookingForm } from '../hooks/useBookingForm';
@@ -11,14 +13,10 @@ const ServicePage = ({ config }) => {
   };
 
   return (
-    <div className="service-page">
-      <div className={`service-hero-banner ${config.heroClass || ''}`}>
-        <div className="hero-overlay" />
-        <div className="hero-content">
-          <h1 className="hero-title">{config.title}</h1>
-          <p className="hero-subtitle">{config.subtitle}</p>
-        </div>
-      </div>
+    <div className="lx-page service-page">
+      <PageIntro eyebrow={<Link to="/services">← All services</Link>} title={config.title}>
+        <p>{config.subtitle}</p>
+      </PageIntro>
 
       <section className="services-section">
         <div className="section-header">
@@ -42,7 +40,7 @@ const ServicePage = ({ config }) => {
         </article>
       </section>
 
-      <div ref={formRef}>
+      <div ref={formRef} className="lx-booking-anchor">
         <BookingForm
           service={{
             title: config.title,

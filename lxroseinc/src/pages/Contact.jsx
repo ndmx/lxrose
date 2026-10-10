@@ -1,3 +1,4 @@
+import PageIntro from '../components/PageIntro';
 import React, { useState } from 'react';
 import { submitPublicForm } from '../firebase';
 import { Link } from 'react-router-dom';
@@ -95,17 +96,12 @@ const Contact = () => {
   };
 
   return (
-    <div className="contact-page">
+    <div className="lx-page contact-page">
 
       {/* Hero */}
-      <section className="contact-hero-section">
-        <p className="contact-kicker">Contact Us</p>
-        <h1>Get In Touch</h1>
-        <p>
-          Have a question or ready to start? Reach out and our team will
-          respond within one business day.
-        </p>
-      </section>
+      <PageIntro eyebrow="Find your care" title="A conversation is a good start.">
+        <p>Have a question or ready to start? Reach out and our team will respond within one business day.</p>
+      </PageIntro>
 
       <div className="contact-section">
 

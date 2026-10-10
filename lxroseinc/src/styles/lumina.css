@@ -122,3 +122,82 @@
 html:has(.lumina-public), body:has(.lumina-public) { overflow-x: clip; overflow-y: visible; }
 .lumina-public #services.lx-services { padding: 52px var(--lx-gutter) 68px; }
 @media (max-width: 719px) { .lumina-public #services.lx-services { padding: 42px var(--lx-gutter); } }
+
+/* Shared Lumina page language: the navigation never crosses into a legacy theme. */
+.lx-navigation > a[aria-current] { text-decoration: underline; text-underline-offset: 7px; text-decoration-thickness: 2px; }
+.lumina-public .lx-page {
+  --color-bg: var(--ls-surface); --color-bg-soft: var(--ls-bg); --color-ink: var(--ls-text);
+  --color-muted: var(--ls-text-muted); --color-subtle: var(--ls-text-muted);
+  --color-border: var(--lx-line); --color-blue: var(--ls-accent); --color-blue-dark: var(--ls-text);
+  --color-blue-border: var(--ls-accent); --radius: 4px; --shadow: none; --shadow-sm: none;
+  max-width: 1440px; margin: 0 auto; padding: 0 var(--lx-gutter) 64px; color: var(--ls-text);
+}
+.lumina-public .lx-page section { margin: 0; box-shadow: none; border-radius: 0; background: transparent; border: 0; }
+.lumina-public .lx-page :is(h1, h2, h3, p) { color: inherit; text-align: left; text-shadow: none; }
+.lumina-public .lx-page :is(h1, h2) { font-family: var(--lx-serif); font-weight: 500; letter-spacing: -.035em; line-height: 1.08; }
+.lumina-public .lx-page h2 { font-size: clamp(32px, 3.5vw, 48px); }
+.lumina-public .lx-page h3 { font-size: 18px; }
+.lumina-public .lx-page p { line-height: 1.8; font-size: 14px; color: var(--ls-text-muted); }
+.lumina-public .lx-page em { color: var(--ls-accent-2); font-weight: 400; }
+.lumina-public .lx-page-intro { padding: 60px 0 48px; border-bottom: 1px solid var(--lx-line); margin-bottom: 40px; }
+.lumina-public .lx-page-intro h1 { font-size: clamp(48px, 5.6vw, 80px); max-width: 940px; margin: 20px 0; }
+.lumina-public .lx-page .lx-eyebrow,
+.lumina-public .lx-page :is(.about-copy-block > span, .contact-kicker) { font: 700 10px/1.6 'Manrope', sans-serif; letter-spacing: .13em; text-transform: uppercase; color: var(--ls-text-muted); }
+.lumina-public .lx-page-description { max-width: 640px; }
+.lumina-public .lx-page-description p { margin: 0; font-size: 15px; }
+.lx-page-intro .lx-eyebrow a { display: inline-flex; align-items: center; min-height: 44px; text-underline-offset: 5px; }
+.lumina-public .lx-page :is(.about-story-section, .about-values-section, #team-members-section, #team-stats-section, #closing-section, .contact-details-section, .contact-main-section, .services-section) { padding: 32px 0; width: 100%; max-width: none; border-bottom: 1px solid var(--lx-line); }
+.lumina-public .lx-page :is(.about-section-header, .section-header) { text-align: left; max-width: none; margin: 0 0 28px; }
+.lumina-public .lx-page :is(.about-section-header p, .section-header p, #closing-section p) { margin: 0; max-width: 720px; text-align: left; }
+.lumina-public .lx-page :is(.about-value-card, .team-member-card, .stat-item, .contact-detail-card, .faq-category, .faq-item, .faq-footer, .service-card, .booking-form-wrapper, .privacy-policy-content) { background: var(--ls-surface); border: 1px solid var(--lx-line); border-radius: 4px; box-shadow: none; }
+.lumina-public .lx-page :is(.service-card:hover, .faq-item:hover, .contact-detail-card:hover) { transform: none; border-color: var(--ls-accent); box-shadow: none; }
+.lumina-public .lx-page :is(.member-credentials, .service-options-list li, .accordion-icon) { background: var(--ls-bg); border-color: var(--lx-line); color: var(--ls-text); border-radius: 3px; }
+.lumina-public .lx-page :is(.stat-number, .contact-detail-icon) { color: var(--ls-accent); }
+.lumina-public .lx-page :is(.stat-label, .contact-detail-label, .contact-detail-note, .cf-optional, .cf-char-count, .contact-service-list-label) { color: var(--ls-text-muted); }
+.lumina-public .lx-page :is(.contact-detail-value, .cf-field label, .faq-question) { color: var(--ls-text); }
+.lumina-public .lx-page .contact-detail-card { min-width: 0; padding: 18px 14px; }
+.lumina-public .lx-page .contact-detail-value { overflow-wrap: anywhere; }
+.lumina-public .lx-page .contact-service-link { min-height: 44px; background: var(--ls-surface); color: var(--ls-text); border-color: var(--lx-line); border-radius: 3px; }
+.lumina-public .lx-page .contact-service-link:hover { border-color: var(--ls-accent); }
+.lumina-public .lx-page .contact-main-section { gap: clamp(24px, 5vw, 72px); }
+.lumina-public .lx-page form { background: none; padding: 0; margin: 0; max-width: none; box-shadow: none; }
+.lumina-public .lx-page :is(input, select, textarea) { min-width: 0; width: 100%; min-height: 48px; background: var(--ls-surface); color: var(--ls-text); border: 1px solid var(--ls-border-strong); border-radius: 3px; font: 400 16px/1.5 'Manrope', sans-serif; box-shadow: none; }
+.lumina-public .lx-page :is(input, select, textarea):focus-visible { outline: 3px solid var(--ls-accent); outline-offset: 3px; }
+.lumina-public .lx-page :is(input, textarea)::placeholder { color: var(--ls-text-muted); }
+.lumina-public .lx-page .cf-error { border-color: #972a26; }
+.lumina-public .lx-page :is(.service-book-btn, .btn-primary, #contact-form-btn) { background: var(--ls-accent); border: 1px solid var(--ls-accent); color: var(--ls-on-accent); border-radius: 4px; min-height: 48px; padding: 13px 23px; font: 600 13px 'Manrope', sans-serif; box-shadow: none; }
+.lumina-public .lx-page :is(.service-book-btn, .btn-primary, #contact-form-btn):hover { background: var(--ls-text); border-color: var(--ls-text); transform: none; }
+.lumina-public .lx-page .btn-secondary { min-height: 48px; }
+.lumina-public .lx-page .faq-container { max-width: 900px; margin: auto; padding: 0; }
+.lumina-public .lx-page .faq-question { font: 600 14px/1.6 'Manrope', sans-serif; min-height: 48px; }
+.lumina-public .lx-page .faq-item.active { border-color: var(--ls-accent); }
+.lumina-public .lx-page .faq-answer.show { max-height: none; }
+.lumina-public .lx-page .category-title { border-color: var(--lx-line); font-size: 32px; }
+.lumina-public .lx-page .accordion-icon { font-size: 18px; min-width: 32px; text-align: center; }
+.lumina-public .lx-page .service-card--single { max-width: none; padding: 28px; }
+.lumina-public .lx-page .service-book-btn { width: fit-content; }
+.lumina-public .lx-page .lx-booking-anchor { scroll-margin-top: 112px; padding-top: 40px; }
+.lumina-public .lx-page .booking-form-wrapper { max-width: 850px; margin: 0 auto; }
+.lumina-public .lx-services-page .lx-services { padding: 0; border: 0; }
+.lumina-public .lx-page .lx-service-detail { font-size: 10px; letter-spacing: .06em; margin: 0; }
+.lumina-public .lx-page .lx-service h3 { font: 500 34px var(--lx-serif); margin: 7px 0; }
+.lumina-public .lx-page .lx-service p:last-child { font-size: 12px; margin: 0; }
+.lumina-public .lx-page .lx-services h2 { margin-top: 0; }
+.lumina-public .lx-page .lx-services > div > p { max-width: 380px; }
+.lumina-public .lx-page .privacy-policy-content section { padding: 0; margin-bottom: 32px; }
+@media (max-width: 719px) {
+  .lumina-public .lx-page { padding-bottom: 40px; }
+  .lumina-public .lx-page-intro { padding: 30px 0; margin-bottom: 24px; }
+  .lumina-public .lx-page-intro h1 { font-size: clamp(44px, 12vw, 64px); }
+  .lumina-public .lx-page-description p { font-size: 13px; }
+  .lumina-public .lx-page .contact-details-section { padding-top: 0; }
+  .lumina-public .lx-page :is(.about-value-card, .team-member-card, .faq-category, .service-card--single, .privacy-policy-content) { padding: 20px; }
+  .lumina-public .lx-page .faq-question { padding: 14px; gap: 8px; }
+  .lumina-public .lx-page .lx-booking-anchor { scroll-margin-top: 88px; }
+}
+.lumina-public .lx-page { background: transparent; }
+.lumina-public .lx-page :is(p, h3) { font-family: 'Manrope', sans-serif; }
+.lumina-public .lx-page :is(#team-stats-section, #team-members-section, #closing-section) { background: transparent; border-radius: 0; box-shadow: none; }
+.lumina-public .lx-page .lx-services > div { text-align: left; }
+.lumina-public .lx-page .lx-services > div > p { margin: 20px 0; }
+.lumina-public .lx-page .lx-service h3 { font-family: var(--lx-serif); }
